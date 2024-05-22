@@ -1,0 +1,1 @@
+# uddogi-odoo-module
