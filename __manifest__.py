@@ -5,7 +5,9 @@
     'author': 'Nascenia Limited',
     'category': 'Uncategorized',
     'depends': ['base', 'sale', 'purchase', 'account', 'stock'],
-    'data': [],
+    'data': [
+        'views/sale_order_views.xml'
+    ],
     'installable': True,
     'application': True,
 }

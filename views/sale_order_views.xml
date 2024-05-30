@@ -1,0 +1,36 @@
+<!-- views/sale_order_views.xml -->
+<odoo>
+    <record id="view_order_form_inherit" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <group string="Additional Information">
+                    <field name="trans_number"/>
+                    <field name="challan_no"/>
+                    <field name="challan_date"/>
+                    <field name="entry_date"/>
+                    <field name="process_date"/>
+                    <field name="remarks"/>
+                </group>
+            </sheet>
+        </field>
+    </record>
+
+    <record id="view_order_tree_inherit" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <tree position="inside">
+                <field name="trans_number"/>
+                <field name="challan_no"/>
+                <field name="challan_date"/>
+                <field name="entry_date"/>
+                <field name="process_date"/>
+                <field name="remarks"/>
+            </tree>
+        </field>
+    </record>
+</odoo>
