@@ -1,4 +1,4 @@
-# models/res_company_extend.py
+# models/res_company_extended.py
 from odoo import models, fields
 
 

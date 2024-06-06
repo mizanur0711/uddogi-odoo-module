@@ -1,5 +1,6 @@
-<!-- views/res_company_extended_views.xml -->
+<!-- views/res_company_views.xml -->
 <odoo>
+    <!-- Inherit the form view of the company -->
     <record id="view_res_company_form_inherit" model="ir.ui.view">
         <field name="name">res.company.form.inherit</field>
         <field name="model">res.company</field>
