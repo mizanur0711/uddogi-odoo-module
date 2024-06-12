@@ -1,11 +1,11 @@
-<!-- views/sale_order_views.xml -->
 <odoo>
-    <record id="view_order_form_inherit" model="ir.ui.view">
-        <field name="name">sale.order.form.inherit</field>
+    <!-- Inherit the Sale Order form view to add new fields -->
+    <record id="view_order_form_inherit_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.custom</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <sheet position="inside">
+            <xpath expr="//sheet" position="inside">
                 <group string="Additional Information">
                     <field name="trans_number"/>
                     <field name="challan_no"/>
@@ -14,23 +14,27 @@
                     <field name="process_date"/>
                     <field name="remarks"/>
                 </group>
-            </sheet>
+            </xpath>
         </field>
     </record>
 
-    <record id="view_order_tree_inherit" model="ir.ui.view">
-        <field name="name">sale.order.tree.inherit</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_tree"/>
+    <!-- Inherit the Sale Order Line form view to add HS Code fields -->
+    <record id="view_order_line_form_inherit_hs_code" model="ir.ui.view">
+        <field name="name">sale.order.line.form.inherit.hs.code</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="sale.view_order_line_form"/>
         <field name="arch" type="xml">
-            <tree position="inside">
-                <field name="trans_number"/>
-                <field name="challan_no"/>
-                <field name="challan_date"/>
-                <field name="entry_date"/>
-                <field name="process_date"/>
-                <field name="remarks"/>
-            </tree>
+            <xpath expr="//group" position="inside">
+                <group string="HS Code Information">
+                    <field name="hs_code_id"/>
+                    <field name="cd_percentage"/>
+                    <field name="sd_percentage"/>
+                    <field name="vat_percentage"/>
+                    <field name="ait_percentage"/>
+                    <field name="rd_percentage"/>
+                    <field name="at_percentage"/>
+                </group>
+            </xpath>
         </field>
     </record>
 </odoo>

@@ -1,0 +1,5 @@
+<!-- views/menu.xml -->
+<odoo>
+    <menuitem id="menu_hs_code_root" name="HS Codes" parent="stock.menu_stock_config" sequence="10"/>
+    <menuitem id="submenu_hs_code" name="Manage HS Codes" parent="menu_hs_code_root" action="action_hs_code"/>
+</odoo>

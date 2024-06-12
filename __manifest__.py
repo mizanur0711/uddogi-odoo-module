@@ -9,6 +9,9 @@
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/res_company_views.xml',
+        'views/hs_code_views.xml',
+        'views/menu.xml',
+        'views/actions.xml'
     ],
     'installable': True,
     'application': True,

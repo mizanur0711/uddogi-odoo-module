@@ -1,11 +1,9 @@
-# models/product_info.py
 from odoo import models, fields
-
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    item_hs_code = fields.Char(string="HS Code")
+    item_hs_code = fields.Many2one('hs.code', string="HS Code", help="Select the HS Code for this product")
     item_inventory_method = fields.Selection([
         ('fifo', 'FIFO'),
         ('lifo', 'LIFO'),

@@ -1,0 +1,8 @@
+<!-- views/actions.xml -->
+<odoo>
+    <record id="action_hs_code_tree" model="ir.actions.act_window">
+        <field name="name">HS Codes</field>
+        <field name="res_model">hs.code</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
