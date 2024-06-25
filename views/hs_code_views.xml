@@ -45,9 +45,6 @@
         </field>
     </record>
 
-    <menuitem id="menu_hs_code" name="HS Codes" parent="base.menu_custom" sequence="10"/>
-    <menuitem id="submenu_hs_code" name="HS Codes" parent="menu_hs_code" action="action_hs_code"/>
-
     <record id="action_hs_code" model="ir.actions.act_window">
         <field name="name">HS Codes</field>
         <field name="res_model">hs.code</field>

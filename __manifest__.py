@@ -6,6 +6,7 @@
     'category': 'Uncategorized',
     'depends': ['base', 'sale', 'purchase', 'account', 'stock'],
     'data': [
+        'security/ir.model.access.csv',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/res_company_views.xml',
