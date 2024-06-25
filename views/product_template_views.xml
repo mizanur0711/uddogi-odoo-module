@@ -8,7 +8,7 @@
         <field name="arch" type="xml">
             <sheet position="inside">
                 <group string="Additional Information">
-                    <field name="item_hs_code"/>
+                    <field name="hs_code_id"/>
                     <field name="item_inventory_method"/>
                     <field name="item_nature"/>
                 </group>
@@ -23,10 +23,11 @@
         <field name="inherit_id" ref="product.product_template_tree_view"/>
         <field name="arch" type="xml">
             <tree position="inside">
-                <field name="item_hs_code"/>
+                <field name="hs_code_id"/>
                 <field name="item_inventory_method"/>
                 <field name="item_nature"/>
             </tree>
         </field>
     </record>
 </odoo>
+

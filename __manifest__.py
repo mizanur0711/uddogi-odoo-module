@@ -9,6 +9,8 @@
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
         'views/res_company_views.xml',
+        'views/hs_code_views.xml',
+        'security/ir.model.access.csv',
     ],
     'installable': True,
     'application': True,

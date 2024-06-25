@@ -1,0 +1,56 @@
+<odoo>
+    <record id="view_hs_code_form" model="ir.ui.view">
+        <field name="name">hs.code.form</field>
+        <field name="model">hs.code</field>
+        <field name="arch" type="xml">
+            <form string="HS Code">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="fiscal_year"/>
+                        <field name="description"/>
+                        <field name="cd_percentage"/>
+                        <field name="sd_percentage"/>
+                        <field name="vat_percentage"/>
+                        <field name="ait_percentage"/>
+                        <field name="rd_percentage"/>
+                        <field name="at_percentage"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_hs_code_tree" model="ir.ui.view">
+        <field name="name">hs.code.tree</field>
+        <field name="model">hs.code</field>
+        <field name="arch" type="xml">
+            <tree string="HS Codes">
+                <field name="name"/>
+                <field name="fiscal_year"/>
+                <field name="cd_percentage"/>
+                <field name="sd_percentage"/>
+                <field name="vat_percentage"/>
+                <field name="ait_percentage"/>
+                <field name="rd_percentage"/>
+                <field name="at_percentage"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_hs_code" model="ir.actions.act_window">
+        <field name="name">HS Codes</field>
+        <field name="res_model">hs.code</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new HS Code.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_hs_code_root" name="HS Codes" sequence="10"/>
+    <menuitem id="menu_hs_code" name="HS Codes" parent="menu_hs_code_root" action="action_hs_code"/>
+</odoo>
