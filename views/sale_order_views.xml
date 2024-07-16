@@ -1,36 +1,70 @@
-<!-- views/sale_order_views.xml -->
 <odoo>
+    <!-- Inherited Sale Order Form View -->
     <record id="view_order_form_inherit" model="ir.ui.view">
         <field name="name">sale.order.form.inherit</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <sheet position="inside">
-                <group string="Additional Information">
-                    <field name="trans_number"/>
-                    <field name="challan_no"/>
-                    <field name="challan_date"/>
-                    <field name="entry_date"/>
-                    <field name="process_date"/>
-                    <field name="remarks"/>
-                </group>
-            </sheet>
-        </field>
-    </record>
+            <xpath expr="//sheet" position="inside">
+                <group string="Sales Order Details" class="o_sales_order_custom_group">
+                    <!-- Sales Type Field -->
+                    <field name="sales_type" widget="radio" options="{'horizontal': true}" />
 
-    <record id="view_order_tree_inherit" model="ir.ui.view">
-        <field name="name">sale.order.tree.inherit</field>
-        <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_tree"/>
-        <field name="arch" type="xml">
-            <tree position="inside">
-                <field name="trans_number"/>
-                <field name="challan_no"/>
-                <field name="challan_date"/>
-                <field name="entry_date"/>
-                <field name="process_date"/>
-                <field name="remarks"/>
-            </tree>
+                    <!-- Export Type Field -->
+                    <field name="export_type" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
+
+                    <!-- Selling Branch Field -->
+                    <field name="selling_branch"/>
+
+                    <!-- Custom House Field -->
+                    <field name="custom_house" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
+
+                    <!-- Bill of Export No. Field -->
+                    <field name="bill_of_export_no" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
+
+                    <!-- Bill of Export Date Field -->
+                    <field name="bill_of_export_date" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
+
+                    <!-- Item Code Field -->
+                    <field name="item_code" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
+
+                    <!-- Shipping Address Field -->
+                    <field name="shipping_address" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
+
+                    <!-- Billing Address Field -->
+                    <field name="billing_address" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
+
+                    <!-- Vehicle Number Field -->
+                    <field name="vehicle_number" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
+
+                    <!-- Customer BIN Field -->
+                    <field name="customer_bin" attrs="{'invisible': [('sales_type', '!=', 'local_registered')]}"/>
+
+                    <!-- Customer NID Field -->
+                    <field name="customer_nid" attrs="{'invisible': [('sales_type', '!=', 'local_unregistered')]}"/>
+
+                    <!-- Customer BIN Field (with Export Type condition) -->
+                    <field name="customer_bin" attrs="{'invisible': [('sales_type', '!=', 'export'), ('export_type', '!=', 'deemed')]}"/>
+
+                    <!-- Total Tax Field -->
+                    <field name="total_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
+                </group>
+            </xpath>
+        <xpath expr="//notebook/page[@name='order_lines']" position="after">
+                <page string="Cloned Order Lines">
+                    <field name="cloned_order_line_ids">
+                        <tree editable="bottom" create="true" delete="true">
+                            <field name="product_template_id"/>
+                            <field name="name"/>
+                            <field name="price_unit"/>
+                            <field name="product_uom_qty"/>
+                            <field name="sd_percentage"/>
+                            <field name="vat_percentage"/>
+                            <field name="total_tax"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
         </field>
     </record>
 </odoo>
