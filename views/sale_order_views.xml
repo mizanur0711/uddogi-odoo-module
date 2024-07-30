@@ -5,6 +5,7 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <!-- Existing fields update -->
             <xpath expr="//sheet" position="inside">
                 <group string="Sales Order Details" class="o_sales_order_custom_group">
                     <!-- Sales Type Field -->
@@ -49,6 +50,17 @@
                     <!-- Total Tax Field -->
                     <field name="total_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                 </group>
+            </xpath>
+
+            <!-- Add new page after 'order_lines' -->
+            <xpath expr="//notebook/page[@name='order_lines']" position="after">
+                <page string="Tax and Total Info">
+                    <group>
+                        <field name="total_sd_percentage" readonly="1"/>
+                        <field name="total_vat_percentage" readonly="1"/>
+                        <field name="total_amount_with_tax" readonly="1"/>
+                    </group>
+                </page>
             </xpath>
         </field>
     </record>
