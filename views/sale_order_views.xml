@@ -50,21 +50,6 @@
                     <field name="total_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                 </group>
             </xpath>
-        <xpath expr="//notebook/page[@name='order_lines']" position="after">
-                <page string="Cloned Order Lines">
-                    <field name="cloned_order_line_ids">
-                        <tree editable="bottom" create="true" delete="true">
-                            <field name="product_template_id"/>
-                            <field name="name"/>
-                            <field name="price_unit"/>
-                            <field name="product_uom_qty"/>
-                            <field name="sd_percentage"/>
-                            <field name="vat_percentage"/>
-                            <field name="total_tax"/>
-                        </tree>
-                    </field>
-                </page>
-            </xpath>
         </field>
     </record>
 </odoo>
