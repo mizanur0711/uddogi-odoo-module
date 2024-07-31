@@ -1,4 +1,3 @@
-# sale_order.py
 from odoo import models, fields, api
 
 class SaleOrder(models.Model):
@@ -24,24 +23,28 @@ class SaleOrder(models.Model):
     bill_of_export_date = fields.Date(string="Bill of Export Date")
     item_code = fields.Char(string="Item Code")
 
-class SaleOrder(models.Model):
-    _inherit = 'sale.order'
-
-    total_sd_percentage = fields.Float(string="Total SD (%)", compute="_compute_total_sd_percentage")
-    total_vat_percentage = fields.Float(string="Total VAT (%)", compute="_compute_total_vat_percentage")
-    total_amount_with_tax = fields.Float(string="Total Amount with Tax", compute="_compute_total_amount_with_tax")
-
-    @api.depends('order_line.sd_percentage', 'order_line.product_uom_qty')
-    def _compute_total_sd_percentage(self):
+    amount_total_with_taxes = fields.Monetary(string="Total with Taxes", compute="_compute_amount_total_with_taxes",
+                                              store=True)
+    @api.depends('order_line')
+    def _compute_amount_total_with_taxes(self):
         for order in self:
-            order.total_sd_percentage = sum(line.sd_percentage * line.product_uom_qty for line in order.order_line)
+            # Calculate the total amount including taxes
+            total = 0.0
+            for line in order.order_line:
+                total += line.price_subtotal + line.total_tax
+            order.amount_total_with_taxes = total
 
-    @api.depends('order_line.vat_percentage', 'order_line.product_uom_qty')
-    def _compute_total_vat_percentage(self):
-        for order in self:
-            order.total_vat_percentage = sum(line.vat_percentage * line.product_uom_qty for line in order.order_line)
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
 
-    @api.depends('order_line.total_tax')
-    def _compute_total_amount_with_tax(self):
-        for order in self:
-            order.total_amount_with_tax = sum(line.total_tax for line in order.order_line)
+    sd_percentage = fields.Float(string="SD (%)", related='product_id.product_tmpl_id.hs_code_id.sd_percentage', store=True)
+    vat_percentage = fields.Float(string="VAT (%)", related='product_id.product_tmpl_id.hs_code_id.vat_percentage', store=True)
+    total_tax = fields.Float(string="Total Tax", compute="_compute_total_tax", store=True)
+
+    @api.depends('sd_percentage', 'vat_percentage', 'price_unit', 'product_uom_qty')
+    def _compute_total_tax(self):
+        for line in self:
+            total_price_before_tax = line.price_unit * line.product_uom_qty
+            sd_amount = total_price_before_tax * (line.sd_percentage / 100)
+            vat_amount = total_price_before_tax * (line.vat_percentage / 100)
+            line.total_tax = sd_amount + vat_amount

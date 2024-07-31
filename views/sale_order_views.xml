@@ -5,62 +5,34 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <!-- Existing fields update -->
             <xpath expr="//sheet" position="inside">
                 <group string="Sales Order Details" class="o_sales_order_custom_group">
-                    <!-- Sales Type Field -->
                     <field name="sales_type" widget="radio" options="{'horizontal': true}" />
-
-                    <!-- Export Type Field -->
                     <field name="export_type" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
-
-                    <!-- Selling Branch Field -->
                     <field name="selling_branch"/>
-
-                    <!-- Custom House Field -->
                     <field name="custom_house" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
-
-                    <!-- Bill of Export No. Field -->
                     <field name="bill_of_export_no" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
-
-                    <!-- Bill of Export Date Field -->
                     <field name="bill_of_export_date" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
-
-                    <!-- Item Code Field -->
                     <field name="item_code" attrs="{'invisible': [('sales_type', '!=', 'export')]}"/>
-
-                    <!-- Shipping Address Field -->
                     <field name="shipping_address" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
-
-                    <!-- Billing Address Field -->
                     <field name="billing_address" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
-
-                    <!-- Vehicle Number Field -->
                     <field name="vehicle_number" attrs="{'invisible': [('sales_type', '=', 'export')]}"/>
-
-                    <!-- Customer BIN Field -->
                     <field name="customer_bin" attrs="{'invisible': [('sales_type', '!=', 'local_registered')]}"/>
-
-                    <!-- Customer NID Field -->
                     <field name="customer_nid" attrs="{'invisible': [('sales_type', '!=', 'local_unregistered')]}"/>
-
-                    <!-- Customer BIN Field (with Export Type condition) -->
                     <field name="customer_bin" attrs="{'invisible': [('sales_type', '!=', 'export'), ('export_type', '!=', 'deemed')]}"/>
-
-                    <!-- Total Tax Field -->
-                    <field name="total_tax" widget='monetary' options="{'currency_field': 'currency_id'}"/>
                 </group>
             </xpath>
-
-            <!-- Add new page after 'order_lines' -->
-            <xpath expr="//notebook/page[@name='order_lines']" position="after">
-                <page string="Tax and Total Info">
-                    <group>
-                        <field name="total_sd_percentage" readonly="1"/>
-                        <field name="total_vat_percentage" readonly="1"/>
-                        <field name="total_amount_with_tax" readonly="1"/>
-                    </group>
-                </page>
+            <!-- Add fields to the existing 'order_lines' page tree view -->
+            <xpath expr="//page[@name='order_lines']//tree" position="inside">
+                <field name="sd_percentage" string="SD (%)"/>
+                <field name="vat_percentage" string="VAT (%)"/>
+                <field name="total_tax" string="Total Tax"/>
+            </xpath>
+            <xpath expr="//group[@name='note_group']" position="inside">
+                <!-- Insert Order Totals group -->
+                <group name="order_totals_group" colspan="2" class="oe_subtotal_footer oe_right">
+                    <field name="amount_total_with_taxes" widget="monetary" readonly="1"/>
+                </group>
             </xpath>
         </field>
     </record>
