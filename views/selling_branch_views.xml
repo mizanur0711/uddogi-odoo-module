@@ -1,0 +1,47 @@
+<odoo>
+    <!-- Form view for Selling Branch -->
+    <record id="view_selling_branch_form" model="ir.ui.view">
+        <field name="name">selling.branch.form</field>
+        <field name="model">selling.branch</field>
+        <field name="arch" type="xml">
+            <form string="Selling Branch">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="address"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree view for Selling Branch -->
+    <record id="view_selling_branch_tree" model="ir.ui.view">
+        <field name="name">selling.branch.tree</field>
+        <field name="model">selling.branch</field>
+        <field name="arch" type="xml">
+            <tree string="Selling Branches">
+                <field name="name"/>
+                <field name="address"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action to open Selling Branch views -->
+    <record id="action_selling_branch" model="ir.actions.act_window">
+        <field name="name">Selling Branches</field>
+        <field name="res_model">selling.branch</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click to create a new Selling Branch.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu items for Selling Branch -->
+    <menuitem id="menu_selling_branch_root" name="Branches" sequence="20"/>
+    <menuitem id="menu_selling_branch" name="Selling Branches" parent="menu_selling_branch_root" action="action_selling_branch"/>
+</odoo>

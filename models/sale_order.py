@@ -15,7 +15,7 @@ class SaleOrder(models.Model):
     shipping_address = fields.Char(string="Shipping Address")
     billing_address = fields.Char(string="Billing Address")
     vehicle_number = fields.Char(string="Vehicle Number")
-    selling_branch = fields.Char(string="Selling Branch")
+    selling_branch = fields.Many2one('selling.branch', string='Selling Branch')
     customer_bin = fields.Char(string="Customer BIN")
     customer_nid = fields.Char(string="Customer NID")
     custom_house = fields.Char(string="Custom House")
