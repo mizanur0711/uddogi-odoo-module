@@ -57,8 +57,8 @@ class VMSController(http.Controller):
 
             # Fetch sale orders within the date range and with status 'sale'
             sale_orders = request.env['sale.order'].sudo().search([
-                ('date_order', '>=', start_date),
-                ('date_order', '<=', end_date),
+                ('create_date', '>=', start_date),
+                ('create_date', '<=', end_date),
                 ('state', '=', 'sale')
             ])
 
@@ -68,41 +68,55 @@ class VMSController(http.Controller):
             end = start + int(pageSize)
 
             for order in sale_orders[start:end]:
+                # Fetch selling branch details
+                selling_branch = order.selling_branch or False
+                branch_id = selling_branch.branch_id if selling_branch else "N/A"
+                branch_name = selling_branch.name if selling_branch else "N/A"
+                branch_address = selling_branch.address if selling_branch else "N/A"
+
+                # Fetch customer details
+                customer = order.partner_id
+                customer_name = customer.name or "N/A"
+                customer_address = customer.contact_address or "N/A"
+
+                # Determine registration status based on customer_bin
+                trans_reg_status = "Registered" if order.customer_bin else "Unregistered"
+
+
                 for line in order.order_line:
+                    hs_code = line.product_id.hs_code_id
                     item_data = {
                         "number": order.id,
                         "trans_number": order.name,
                         "challan_date": order.date_order.strftime('%Y-%m-%dT%H:%M:%S'),
                         "entry_date": order.create_date.strftime('%Y-%m-%dT%H:%M:%S'),
                         "challan_no": order.name,
-                        "BranchId": 1,  # Replace with actual branch ID logic
-                        "trans_reg_status": "Unregistered",  # Adjust based on actual logic
-                        "branch_name": "Navana Foods Central Warehouse",  # Replace with actual branch name
-                        "branch_address": "220 Kunipara ,Tejgoan I/A,Dhaka",  # Replace with actual branch address
-                        "CounterBranchId": 21,  # Replace with actual counter branch ID logic
+                        "BranchId": branch_id,
+                        "trans_reg_status": trans_reg_status,
+                        "branch_name": branch_name,
+                        "branch_address": branch_address,
+                        "CounterBranchId": branch_id,
                         "trans_type": 18,  # Sales
                         "trans_type_name": "Sales",
                         "TranSide": 2,
-                        "counter_branch_name": "NAVANA FOODS SUPPORT OFFICE",  # Replace with actual counter branch name
-                        "counter_branch_address": "House # 2/B, Road #71, Gulshan-02, Dhaka-1212, Bangladesh",
-                        # Replace with actual counter branch address
-                        "business_partner_name": "NAVANA FOODS SUPPORT OFFICE",  # Replace with actual partner name
-                        "business_partner_address": "House # 2/B, Road #71, Gulshan-02, Dhaka-1212, Bangladesh",
-                        # Replace with actual partner address
-                        "business_partner_reg_status": False,
-                        "business_partner_bin": "N/A",
-                        "business_partner_nid": "N/A",
+                        "counter_branch_name": branch_name,
+                        "counter_branch_address": branch_address,
+                        "business_partner_name": customer_name,
+                        "business_partner_address": customer_address,
+                        "business_partner_reg_status": trans_reg_status == "Registered",
+                        "business_partner_bin": order.customer_bin,
+                        "business_partner_nid": order.customer_nid,
                         "SKUType": 1,
-                        "item_hs_code": line.product_id.default_code,
+                        "item_hs_code": hs_code.name,
                         "item_name": line.product_id.name,
-                        "item_classification": "Product",
-                        "item_inventory_method": "FIFO",
-                        "item_nature": "Exempted",
+                        "item_classification": "Product" if line.product_id.detailed_type == 'product' else "Service",
+                        "item_inventory_method": line.product_id.item_inventory_method,
+                        "item_nature": line.product_id.item_nature,
                         "item_unit_of_measurement_name": line.product_uom.name,
                         "item_unit_of_measurement_code": line.product_uom.name,
                         "item_quantity": line.product_uom_qty,
-                        "item_unit_price": line.price_unit,
-                        "TradePrice": 130.0,  # Adjust based on actual logic
+                        "item_unit_price": line.product_id.standard_price,
+                        "TradePrice": line.price_unit,
                         "BatchPrice": line.price_unit,
                         "item_tran_value": line.price_subtotal,
                         "ImpactQty": -line.product_uom_qty,
@@ -119,31 +133,31 @@ class VMSController(http.Controller):
                         "remarks": "",
                         "ConversionValue": 1000.0,
                         "RefNo": "",
-                        "vehicle_number": "Dhaka Metro-Sha-11-2026-Chiller Van",  # Replace with actual vehicle number
+                        "vehicle_number": order.vehicle_number,  # Replace with actual vehicle number
                         "GroupStamp": "N/A",
                         "SCAmount": 0.0,
                         "SortOrder": 18,
-                        "business_partner_origin": "Local",
-                        "business_partner_ownership": "Organization",
-                        "business_partner_billing_address": "",
-                        "business_partner_email": "N/A",
+                        "business_partner_origin": customer.business_partner_origin or "N/A",
+                        "business_partner_ownership": customer.business_partner_ownership or "N/A",
+                        "business_partner_billing_address": order.billing_address,
+                        "business_partner_email": customer.email,
                         "transport_nature": "N/A",
                         "c_and_f_agent_name": "N/A",
                         "commercial_or_proforma_invoice_no": "N/A",
-                        "boe_no": order.name,
-                        "boe_date": order.date_order.strftime('%Y-%m-%dT%H:%M:%S'),
-                        "customs_house": "Dhaka Custom house",
+                        "boe_no": order.bill_of_export_no or "N/A",
+                        "boe_date": order.bill_of_export_date.strftime('%Y-%m-%dT%H:%M:%S') if order.bill_of_export_date else "N/A",
+                        "customs_house": order.custom_house or "N/A",
                         "lc_no": order.name,
-                        "lc_date": order.date_order.strftime('%Y-%m-%dT%H:%M:%S'),
-                        "item_av": 0.0,
-                        "item_cd_pc": 0.0,
-                        "item_total_cd": 0.0,
-                        "item_rd_pc": 0.0,
-                        "item_total_rd": 0.0,
-                        "item_ait_pc": 0.0,
-                        "item_total_ait": 0.0,
-                        "item_at_pc": 0.0,
-                        "item_total_at": 0.0,
+                        "lc_date": order.date_order.strftime('%Y-%m-%dT%H:%M:%S') if order.date_order else "N/A",
+                        "item_av": line.price_subtotal,
+                        "item_cd_pc": hs_code.cd_percentage if hs_code else 0.0,
+                        "item_total_cd": hs_code.cd_percentage * line.price_unit * line.product_uom_qty / 100 if hs_code else 0.0,
+                        "item_rd_pc": hs_code.rd_percentage if hs_code else 0.0,
+                        "item_total_rd": hs_code.rd_percentage * line.price_unit * line.product_uom_qty / 100 if hs_code else 0.0,
+                        "item_ait_pc": hs_code.ait_percentage if hs_code else 0.0,
+                        "item_total_ait": hs_code.ait_percentage * line.price_unit * line.product_uom_qty / 100 if hs_code else 0.0,
+                        "item_at_pc": hs_code.at_percentage if hs_code else 0.0,
+                        "item_total_at": hs_code.at_percentage * line.price_unit * line.product_uom_qty / 100 if hs_code else 0.0,
                         "item_fixed_vat_amount_per_unit": 0.0,
                         "customs_station": "N/A",
                         "origin": "N/A",

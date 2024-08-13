@@ -8,7 +8,7 @@
     'data': [
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
-        'views/res_company_views.xml',
+        'views/res_partner_views.xml',
         'views/hs_code_views.xml',
         'views/selling_branch_views.xml',
         'security/ir.model.access.csv',

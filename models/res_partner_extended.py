@@ -1,9 +1,9 @@
-# models/res_company_extended.py
+# models/res_partner_extended.py
 from odoo import models, fields
 
 
-class ResCompany(models.Model):
-    _inherit = 'res.company'
+class ResPartner(models.Model):
+    _inherit = 'res.partner'
 
     business_partner_bin = fields.Char(string="BIN No.")
     business_partner_origin = fields.Selection([
