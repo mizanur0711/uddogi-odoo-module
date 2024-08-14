@@ -11,9 +11,9 @@ class VMSController(http.Controller):
         # Fetch the latest sale order based on creation date with elevated permissions
         sale_order = request.env['sale.order'].sudo().search([], order='create_date desc', limit=1)
 
-        # Format the creation date to DD/MM/YYYY
+        # Format the creation date to "YYYY-MM-DDTHH:MM:SS"
         if sale_order:
-            creation_date = sale_order.create_date.strftime('%d/%m/%Y')
+            creation_date = sale_order.create_date.strftime('%Y-%m-%dT%H:%M:%S')
             return request.make_response(creation_date, headers=[('Content-Type', 'text/plain')])
         else:
             return request.make_response('No Sales Found', headers=[('Content-Type', 'text/plain')])
@@ -22,24 +22,37 @@ class VMSController(http.Controller):
     def get_vms_tran_data_count(self, StartDate=None, EndDate=None):
         if StartDate and EndDate:
             try:
+                # Remove quotes from dates
+                start_date = StartDate.replace('"', '')
+                end_date = EndDate.replace('"', '')
+
                 # Convert the date format from dd/mm/yyyy to yyyy-mm-dd using datetime
-                start_date = datetime.strptime(StartDate, '%d/%m/%Y').strftime('%Y-%m-%d')
-                end_date = datetime.strptime(EndDate, '%d/%m/%Y').strftime('%Y-%m-%d')
+                start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y-%m-%d')
+                end_date = datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y-%m-%d')
 
                 # Fetch sales orders within the date range and with 'sale' state
-                sale_orders = request.env['sale.order'].sudo().search([
-                    ('date_order', '>=', start_date),
-                    ('date_order', '<=', end_date),
+                sale_order_count = request.env['sale.order'].sudo().search_count([
+                    ('create_date', '>=', start_date),
+                    ('create_date', '<=', end_date),
                     ('state', '=', 'sale')
                 ])
 
                 # Return the count of sales orders as a JSON response
-                return request.make_response(str(len(sale_orders)), headers=[('Content-Type', 'application/json')])
+                return request.make_response(str(sale_order_count), headers={'Content-Type': 'text/plain'})
 
             except ValueError:
-                return "Invalid date format. Please provide StartDate and EndDate in the format dd/mm/yyyy."
+                return request.make_response(
+                    json.dumps({
+                                   'error': 'Invalid date format. Please provide StartDate and EndDate in the format dd/mm/yyyy.'}),
+                    headers={'Content-Type': 'application/json'},
+                    status=400
+                )
         else:
-            return "StartDate and EndDate parameters are required."
+            return request.make_response(
+                json.dumps({'error': 'StartDate and EndDate parameters are required.'}),
+                headers={'Content-Type': 'application/json'},
+                status=400
+            )
 
     @http.route('/api/VMS/GetVMSTranData', type='http', auth='public', methods=['GET'], csrf=False)
     def get_vms_tran_data(self, StartDate=None, EndDate=None, pageSize=10, pageNo=0):
