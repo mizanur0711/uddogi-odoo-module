@@ -120,7 +120,11 @@ class VMSController(http.Controller):
                         "item_hs_code": hs_code.name,
                         "item_name": line.product_id.name,
                         "item_classification": "Product" if line.product_id.detailed_type == 'product' else "Service",
-                        "item_inventory_method": line.product_id.item_inventory_method,
+                        "item_inventory_method": (
+                            "FIFO" if line.product_id.item_inventory_method == 'fifo' else
+                            "LIFO" if line.product_id.item_inventory_method == 'lifo' else
+                            "Average" if line.product_id.item_inventory_method == 'average' else "N/A"
+                        ),
                         "item_nature": line.product_id.item_nature,
                         "item_unit_of_measurement_name": line.product_uom.name,
                         "item_unit_of_measurement_code": line.product_uom.name,
