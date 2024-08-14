@@ -11,12 +11,13 @@ class VMSController(http.Controller):
         # Fetch the latest sale order based on creation date with elevated permissions
         sale_order = request.env['sale.order'].sudo().search([], order='create_date desc', limit=1)
 
-        # Format the creation date to "YYYY-MM-DDTHH:MM:SS"
+        # Format the creation date to "YYYY-MM-DDTHH:MM:SS" and wrap it with double quotes
         if sale_order:
             creation_date = sale_order.create_date.strftime('%Y-%m-%dT%H:%M:%S')
-            return request.make_response(creation_date, headers=[('Content-Type', 'text/plain')])
+            quoted_creation_date = f'"{creation_date}"'  # Wrap the date with double quotes
+            return request.make_response(quoted_creation_date, headers={'Content-Type': 'text/plain'})
         else:
-            return request.make_response('No Sales Found', headers=[('Content-Type', 'text/plain')])
+            return request.make_response('"No Sales Found"', headers={'Content-Type': 'text/plain'})
 
     @http.route('/api/VMS/GetVMSTranDataCount', type='http', auth='public', methods=['GET'], csrf=False)
     def get_vms_tran_data_count(self, StartDate=None, EndDate=None):
