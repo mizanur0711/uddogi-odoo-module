@@ -23,13 +23,9 @@ class VMSController(http.Controller):
     def get_vms_tran_data_count(self, StartDate=None, EndDate=None):
         if StartDate and EndDate:
             try:
-                # Remove quotes from dates
-                start_date = StartDate.replace('"', '')
-                end_date = EndDate.replace('"', '')
-
-                # Convert the date format from dd/mm/yyyy to yyyy-mm-dd using datetime
-                start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y-%m-%d')
-                end_date = datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y-%m-%d')
+                # Convert date format from "10 Aug 2024" to "YYYY-MM-DD"
+                start_date = datetime.strptime(StartDate, '%d %b %Y').strftime('%Y-%m-%d')
+                end_date = datetime.strptime(EndDate, '%d %b %Y').strftime('%Y-%m-%d')
 
                 # Fetch sales orders within the date range and with 'sale' state
                 sale_order_count = request.env['sale.order'].sudo().search_count([
@@ -38,13 +34,12 @@ class VMSController(http.Controller):
                     ('state', '=', 'sale')
                 ])
 
-                # Return the count of sales orders as a JSON response
+                # Return the count of sales orders as a plain text response
                 return request.make_response(str(sale_order_count), headers={'Content-Type': 'text/plain'})
 
             except ValueError:
                 return request.make_response(
-                    json.dumps({
-                                   'error': 'Invalid date format. Please provide StartDate and EndDate in the format dd/mm/yyyy.'}),
+                    json.dumps({'error': 'Invalid date format. Please provide StartDate and EndDate in the format "10 Aug 2024".'}),
                     headers={'Content-Type': 'application/json'},
                     status=400
                 )
