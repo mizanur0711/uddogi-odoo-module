@@ -52,8 +52,12 @@ class VMSController(http.Controller):
                     status=400
                 )
 
-            start_date = datetime.strptime(StartDate, '%d/%m/%Y').strftime('%Y-%m-%d')
-            end_date = datetime.strptime(EndDate, '%d/%m/%Y').strftime('%Y-%m-%d')
+            # Remove quotes from dates
+            start_date = StartDate.replace('"', '')
+            end_date = EndDate.replace('"', '')
+
+            start_date = datetime.strptime(start_date, '%d/%m/%Y').strftime('%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%d/%m/%Y').strftime('%Y-%m-%d')
 
             # Fetch sale orders within the date range and with status 'sale'
             sale_orders = request.env['sale.order'].sudo().search([
