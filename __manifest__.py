@@ -13,6 +13,11 @@
         'views/selling_branch_views.xml',
         'security/ir.model.access.csv',
     ],
+    'assets': {
+            'web.assets_backend': [
+                'uddogi-odoo-module/static/src/img/uddogi.png',
+            ],
+        },
     'installable': True,
     'application': True,
 }
