@@ -1,6 +1,6 @@
 {
     'name': 'VATSync - Uddogi for Odoo [Bangladesh]',
-    'version': '1.0.1',
+    'version': '1.0.3',
     'summary': 'Here odoo will send structured data for Uddogi throug API',
     'author': 'Nascenia Limited',
     'category': 'Sales',
@@ -16,6 +16,7 @@
         'views/selling_branch_views.xml',
         'security/ir.model.access.csv',
     ],
+    'images': 'static/description/banner.gif',
     'assets': {
             'web.assets_backend': [
                 'VATSync/static/src/img/uddogi.png',
