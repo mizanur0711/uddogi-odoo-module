@@ -1,6 +1,6 @@
 {
     'name': 'VATSync - Uddogi for Odoo [Bangladesh]',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'summary': 'Here odoo will send structured data for Uddogi throug API',
     'author': 'Nascenia Limited',
     'category': 'Sales',
