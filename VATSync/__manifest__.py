@@ -17,7 +17,7 @@
         'security/ir.model.access.csv',
     ],
     'images':[
-        # '/VATSync/static/description/banner.png',
+        'static/description/banner.png',
             ],
     'assets': {
             'web.assets_backend': [
