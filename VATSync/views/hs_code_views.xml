@@ -52,7 +52,7 @@
             </field>
         </record>
 
-        <menuitem id="menu_hs_code_root" name="HS Codes" sequence="10" web_icon="uddogi-odoo-module,static/src/img/uddogi.png"/>
+        <menuitem id="menu_hs_code_root" name="HS Codes" sequence="10" web_icon="VATSync,static/src/img/uddogi.png"/>
         <menuitem id="menu_hs_code" name="HS Codes" parent="menu_hs_code_root" action="action_hs_code"/>
     </data>
 </odoo>

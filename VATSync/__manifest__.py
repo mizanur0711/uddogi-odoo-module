@@ -18,7 +18,7 @@
     ],
     'assets': {
             'web.assets_backend': [
-                'uddogi-odoo-module/static/src/img/uddogi.png',
+                'VATSync/static/src/img/uddogi.png',
             ],
         },
     'installable': True,
