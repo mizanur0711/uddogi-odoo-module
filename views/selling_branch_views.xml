@@ -44,6 +44,6 @@
     </record>
 
     <!-- Menu items for Selling Branch -->
-    <menuitem id="menu_selling_branch_root" name="Branches" sequence="20"/>
+    <menuitem id="menu_selling_branch_root" name="Branches" sequence="20" web_icon="uddogi-odoo-module,static/src/img/uddogi.png"/>
     <menuitem id="menu_selling_branch" name="Selling Branches" parent="menu_selling_branch_root" action="action_selling_branch"/>
 </odoo>

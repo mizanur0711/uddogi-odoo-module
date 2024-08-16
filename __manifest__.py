@@ -1,10 +1,13 @@
 {
-    'name': 'Uddogi for Odoo',
-    'version': '1.0',
+    'name': 'VATSync - Uddogi for Odoo [Bangladesh]',
+    'version': '1.0.0',
     'summary': 'Here odoo will send structured data for Uddogi throug API',
     'author': 'Nascenia Limited',
-    'category': 'Uncategorized',
-    'depends': ['base', 'sale', 'purchase', 'account', 'stock'],
+    'category': 'Sales',
+    'depends': ['base', 'sale', 'purchase', 'account', 'stock','crm'],
+    'website': 'https://nascenia.com/',
+    'license': 'LGPL-3',
+    'maintainer': 'Nascenia Limited',
     'data': [
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
