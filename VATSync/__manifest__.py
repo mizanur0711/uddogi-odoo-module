@@ -16,7 +16,10 @@
         'views/selling_branch_views.xml',
         'security/ir.model.access.csv',
     ],
-    'images': 'VATSync/static/description/banner.gif',
+    'images':[
+        'VATSync/static/src/img/cover_image.png',
+        'VATSync/static/description/banner.gif'
+            ],
     'assets': {
             'web.assets_backend': [
                 'VATSync/static/src/img/uddogi.png',
