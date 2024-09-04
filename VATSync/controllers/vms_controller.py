@@ -125,7 +125,7 @@ class VMSController(http.Controller):
                             "LIFO" if line.product_id.item_inventory_method == 'lifo' else
                             "Average" if line.product_id.item_inventory_method == 'average' else "N/A"
                         ),
-                        "item_nature": "Exempted",
+                        "item_nature": 2,
                         "item_unit_of_measurement_name": line.product_uom.name,
                         "item_unit_of_measurement_code": line.product_uom.name,
                         "item_quantity": line.product_uom_qty,
