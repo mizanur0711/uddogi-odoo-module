@@ -70,7 +70,7 @@ class VMSController(http.Controller):
                 ('create_date', '>=', start_date),
                 ('create_date', '<=', end_date),
                 ('state', '=', 'sale')
-            ])
+            ], order='id asc')
 
             # Initialize response data list and handle pagination
             response_data = []
