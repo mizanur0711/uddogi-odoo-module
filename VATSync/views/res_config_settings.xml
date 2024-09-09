@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_res_config_settings_api_base_url" model="ir.ui.view">
+        <field name="name">res.config.settings.api.base.url</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.view_res_config_settings"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='general']" position="inside">
+                <div class="app_settings_block" data-string="API Integration Settings">
+                    <h2>API Integration</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6">
+                            <field name="api_base_url"/>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
