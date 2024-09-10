@@ -14,7 +14,7 @@
         'views/res_partner_views.xml',
         'views/hs_code_views.xml',
         'views/selling_branch_views.xml',
-        'views/res_config_settings.xml',
+        'views/res_config_settings_views.xml',
         'security/ir.model.access.csv',
     ],
     'images':[
