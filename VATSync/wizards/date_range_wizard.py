@@ -5,7 +5,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-
 class DateRangeWizard(models.TransientModel):
     _name = 'date.range.wizard'
     _description = 'Date Range Wizard'
@@ -14,7 +13,7 @@ class DateRangeWizard(models.TransientModel):
     end_date = fields.Date(string='End Date', required=True)
 
     def process_data(self):
-        """Send API POST request with notification URL for processing data between dates."""
+        """Send API request with notification URL for processing data between dates."""
         _logger.info("Starting data processing...")
 
         # Fetch API base URL from system parameters
@@ -46,9 +45,8 @@ class DateRangeWizard(models.TransientModel):
         notification_url = f"{odoo_base_url}/api/v1/receive_status"
         _logger.info(f"Notification URL: {notification_url}")
 
-        # Prepare headers and payload
         headers = {
-            'Authorization': f'Bearer {user_api_key}',
+            'Authorization': f'Bearer {user_api_key}',  # Assuming Bearer token authentication
             'Content-Type': 'application/json'
         }
 
@@ -58,10 +56,9 @@ class DateRangeWizard(models.TransientModel):
             'webhook_odoo_url': notification_url
         }
 
-        _logger.info(f"Sending POST request to {api_endpoint} with payload: {payload}")
+        _logger.info(f"Sending request to {api_endpoint} with payload: {payload}")
 
         try:
-            # Send POST request with JSON payload
             response = requests.post(api_endpoint, headers=headers, json=payload)
             _logger.info(f"Response status: {response.status_code}")
             _logger.info(f"Response text: {response.text}")
@@ -69,7 +66,7 @@ class DateRangeWizard(models.TransientModel):
             _logger.error(f"Request failed: {str(e)}")
             raise UserError(f"Request failed: {str(e)}")
 
-        if response.status_code == 200:
+        if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
