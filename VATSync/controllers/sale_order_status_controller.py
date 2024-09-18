@@ -1,6 +1,5 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
-
 
 class SaleOrderStatusController(http.Controller):
 
@@ -27,20 +26,16 @@ class SaleOrderStatusController(http.Controller):
             message=message
         )
 
-        # Return a success response
-        return {
-            'success': True,
-            'message': 'General notification activity created successfully.'
-        }
+        # Return an empty response to indicate success
+        return {}
 
     def validate_bearer_token(self, token):
-        """Validate the Bearer token with the API key of the user."""
-        # Fetch the API key of the current user
-        user = request.env.user
-        api_key = user.api_key_ids[0].key if user.api_key_ids else None
+        """Validate the Bearer token with the global API key."""
+        # Fetch the global API key from system parameters
+        global_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
 
-        # Compare the provided token with the stored API key
-        return token == api_key
+        # Compare the provided token with the global API key
+        return token == global_api_key
 
     def create_general_notification_activity(self, status, message):
         """Create a general notification activity."""
