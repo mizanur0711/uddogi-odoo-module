@@ -10,9 +10,21 @@ class SaleOrderStatusController(http.Controller):
     def receive_status(self, **kwargs):
         _logger.info("Received request at /api/v1/receive_status")
 
+        # Log the content type and the raw data for debugging
+        _logger.info(f"Content-Type: {request.httprequest.headers.get('Content-Type')}")
+        _logger.info(f"Raw request data: {request.httprequest.data}")
+
+        try:
+            # Attempt to extract JSON data using request.jsonrequest
+            request_data = request.jsonrequest
+            _logger.info(f"Received JSON request body: {request_data}")
+        except Exception as e:
+            _logger.error(f"Error extracting JSON data: {str(e)}")
+            return {'error': 'Invalid JSON payload'}
+
         # Extract status and message from request payload
-        status = request.jsonrequest.get('status')
-        message = request.jsonrequest.get('message', 'No message provided')
+        status = request_data.get('status')
+        message = request_data.get('message', 'No message provided')
 
         _logger.info(f"Received status: {status}")
         _logger.info(f"Received message: {message}")
