@@ -16,7 +16,7 @@ class SaleOrderStatusController(http.Controller):
 
         try:
             # Attempt to extract JSON data using request.jsonrequest
-            request_data = request.jsonrequest
+            request_data = request.httprequest.data
             _logger.info(f"Received JSON request body: {request_data}")
         except Exception as e:
             _logger.error(f"Error extracting JSON data: {str(e)}")
