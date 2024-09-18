@@ -59,11 +59,14 @@ class SaleOrderStatusController(http.Controller):
         """Create a general notification activity."""
         activity_type = request.env.ref('mail.mail_activity_data_todo').id
 
+        # Provide a default model ID (you can choose a model that is unlikely to cause issues)
+        default_model_id = request.env.ref('base.model_res_users').id
+
         # Create a general notification activity (using sudo to bypass ACL restrictions)
         request.env['mail.activity'].sudo().create({
             'activity_type_id': activity_type,
-            'res_id': False,  # No specific record id
-            'res_model_id': False,  # No specific model id
+            'res_id': 0,  # No specific record id
+            'res_model_id': default_model_id,  # Provide a default or placeholder model ID
             'summary': f"General Status Update: From UDDOGI",
             'note': f"Message: {message}",
             'user_id': request.env.user.id,
