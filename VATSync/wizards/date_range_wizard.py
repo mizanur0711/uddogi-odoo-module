@@ -1,6 +1,9 @@
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class DateRangeWizard(models.TransientModel):
@@ -11,35 +14,60 @@ class DateRangeWizard(models.TransientModel):
     end_date = fields.Date(string='End Date', required=True)
 
     def process_data(self):
-        """Send API request with notification URL for processing data between dates."""
+        """Send API POST request with notification URL for processing data between dates."""
+        _logger.info("Starting data processing...")
+
         # Fetch API base URL from system parameters
         api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
         if not api_base_url:
+            _logger.error("API base URL is not configured in the settings.")
             raise UserError("API base URL is not configured in the settings.")
-        api_endpoint = f"{api_base_url}/api/v1/is_new_data_available_on_odoo"
+
+        _logger.info(f"API base URL: {api_base_url}")
+        api_endpoint = f"{api_base_url}/api/v1/fetch_with_process"
 
         # Fetch the Odoo base URL dynamically from system parameters
         odoo_base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         if not odoo_base_url:
+            _logger.error("Odoo base URL is not configured in the settings.")
             raise UserError("Odoo base URL is not configured in the settings.")
 
+        _logger.info(f"Odoo base URL: {odoo_base_url}")
+
         # Get the user's API key
-        user_api_key = self.env.user.api_key_ids[0].key
+        user_api_key = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+        if not user_api_key:
+            _logger.error("API key is not configured.")
+            raise UserError("API key is not configured in the settings.")
+
+        _logger.info(f"Using API key: {user_api_key}")
 
         # Derive notification URL using the dynamically fetched Odoo base URL
         notification_url = f"{odoo_base_url}/api/v1/receive_status"
+        _logger.info(f"Notification URL: {notification_url}")
 
+        # Prepare headers and payload
         headers = {
-            'Authorization': f'Bearer {user_api_key}'  # Assuming Bearer token authentication
+            'Authorization': f'Bearer {user_api_key}',
+            'Content-Type': 'application/json'
         }
 
-        params = {
+        payload = {
             'start_date': self.start_date.strftime('%Y-%m-%d'),
             'end_date': self.end_date.strftime('%Y-%m-%d'),
-            'notification_url': notification_url
+            'webhook_odoo_url': notification_url
         }
 
-        response = requests.get(api_endpoint, headers=headers, params=params)
+        _logger.info(f"Sending POST request to {api_endpoint} with payload: {payload}")
+
+        try:
+            # Send POST request with JSON payload
+            response = requests.post(api_endpoint, headers=headers, json=payload)
+            _logger.info(f"Response status: {response.status_code}")
+            _logger.info(f"Response text: {response.text}")
+        except requests.exceptions.RequestException as e:
+            _logger.error(f"Request failed: {str(e)}")
+            raise UserError(f"Request failed: {str(e)}")
 
         if response.status_code == 200:
             return {
@@ -53,4 +81,5 @@ class DateRangeWizard(models.TransientModel):
                 }
             }
         else:
-            raise UserError('Failed to process data!')
+            _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
+            raise UserError(f'Failed to process data! Status: {response.status_code}')
