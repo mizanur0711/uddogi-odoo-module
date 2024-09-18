@@ -11,10 +11,6 @@ class SaleOrderStatusController(http.Controller):
     def receive_status(self, **kwargs):
         _logger.info("Received request at /api/v1/receive_status")
 
-        # Log the content type and the raw data for debugging
-        _logger.info(f"Content-Type: {request.httprequest.headers.get('Content-Type')}")
-        _logger.info(f"Raw request data: {request.httprequest.data}")
-
         try:
             # Convert raw byte data to a string and parse it into a Python dictionary
             request_data = json.loads(request.httprequest.data.decode('utf-8'))
@@ -63,8 +59,8 @@ class SaleOrderStatusController(http.Controller):
         """Create a general notification activity."""
         activity_type = request.env.ref('mail.mail_activity_data_todo').id
 
-        # Create a general notification activity (not tied to any specific sale order)
-        request.env['mail.activity'].create({
+        # Create a general notification activity (using sudo to bypass ACL restrictions)
+        request.env['mail.activity'].sudo().create({
             'activity_type_id': activity_type,
             'res_id': False,  # No specific record id
             'res_model_id': False,  # No specific model id
