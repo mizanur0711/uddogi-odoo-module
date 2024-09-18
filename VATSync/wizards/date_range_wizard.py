@@ -1,82 +1,74 @@
-from odoo import models, fields, api
-from odoo.exceptions import UserError
-import requests
 import logging
+import json
+from odoo import http, fields
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
-class DateRangeWizard(models.TransientModel):
-    _name = 'date.range.wizard'
-    _description = 'Date Range Wizard'
+class SaleOrderStatusController(http.Controller):
 
-    start_date = fields.Date(string='Start Date', required=True)
-    end_date = fields.Date(string='End Date', required=True)
-
-    def process_data(self):
-        """Send API request with notification URL for processing data between dates."""
-        _logger.info("Starting data processing...")
-
-        # Fetch API base URL from system parameters
-        api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
-        if not api_base_url:
-            _logger.error("API base URL is not configured in the settings.")
-            raise UserError("API base URL is not configured in the settings.")
-
-        _logger.info(f"API base URL: {api_base_url}")
-        api_endpoint = f"{api_base_url}/api/v1/fetch_with_process"
-
-        # Fetch the Odoo base URL dynamically from system parameters
-        odoo_base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        if not odoo_base_url:
-            _logger.error("Odoo base URL is not configured in the settings.")
-            raise UserError("Odoo base URL is not configured in the settings.")
-
-        _logger.info(f"Odoo base URL: {odoo_base_url}")
-
-        # Get the user's API key
-        user_api_key = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
-        if not user_api_key:
-            _logger.error("API key is not configured.")
-            raise UserError("API key is not configured in the settings.")
-
-        _logger.info(f"Using API key: {user_api_key}")
-
-        # Derive notification URL using the dynamically fetched Odoo base URL
-        notification_url = f"{odoo_base_url}/api/v1/receive_status"
-        _logger.info(f"Notification URL: {notification_url}")
-
-        headers = {
-            'Authorization': f'Bearer {user_api_key}',  # Assuming Bearer token authentication
-            'Content-Type': 'application/json'
-        }
-
-        payload = {
-            'start_date': self.start_date.strftime('%Y-%m-%d'),
-            'end_date': self.end_date.strftime('%Y-%m-%d'),
-            'webhook_odoo_url': notification_url
-        }
-
-        _logger.info(f"Sending request to {api_endpoint} with payload: {payload}")
+    @http.route('/api/v1/receive_status', type='json', auth='public', methods=['POST'], csrf=False)
+    def receive_status(self, **kwargs):
+        _logger.info("Received request at /api/v1/receive_status")
 
         try:
-            response = requests.post(api_endpoint, headers=headers, json=payload)
-            _logger.info(f"Response status: {response.status_code}")
-            _logger.info(f"Response text: {response.text}")
-        except requests.exceptions.RequestException as e:
-            _logger.error(f"Request failed: {str(e)}")
-            raise UserError(f"Request failed: {str(e)}")
+            # Convert raw byte data to a string and parse it into a Python dictionary
+            request_data = json.loads(request.httprequest.data.decode('utf-8'))
+            _logger.info(f"Received JSON request body: {request_data}")
+        except Exception as e:
+            _logger.error(f"Error extracting JSON data: {str(e)}")
+            return {'error': 'Invalid JSON payload'}
 
-        if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Success',
-                    'message': 'Data processing initiated successfully.',
-                    'type': 'success',
-                    'sticky': False,
-                }
-            }
-        else:
-            _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
-            raise UserError(f'Failed to process data! Status: {response.status_code}')
+        # Extract status and message from request payload
+        status = request_data.get('status')
+        message = request_data.get('message', 'No message provided')
+
+        _logger.info(f"Received status: {status}")
+        _logger.info(f"Received message: {message}")
+
+        # Extract Bearer token from headers
+        token = request.httprequest.headers.get('Authorization')
+        _logger.info(f"Received Authorization header: {token}")
+
+        if not token or not token.startswith('Bearer '):
+            _logger.error('Bearer token is required.')
+            return {'error': 'Bearer token is required.'}
+
+        bearer_token = token[len('Bearer '):]
+
+        # Fetch the global API key from system parameters
+        global_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+        _logger.info(f"Global API key from config: {global_api_key}")
+
+        # Validate the Bearer token
+        if bearer_token != global_api_key:
+            _logger.error('Invalid Bearer token.')
+            return {'error': 'Invalid Bearer token.'}
+
+        # Create a general notification activity
+        self.create_general_notification_activity(
+            status=status,
+            message=message
+        )
+
+        _logger.info("Notification activity created successfully.")
+        # Return a success response
+        return {}
+
+    def create_general_notification_activity(self, status, message):
+        """Create a general notification activity."""
+        activity_type = request.env.ref('mail.mail_activity_data_todo').id
+
+        # Provide a default model ID (you can choose a model that is unlikely to cause issues)
+        default_model_id = request.env.ref('base.model_res_users').id
+
+        # Create a general notification activity (using sudo to bypass ACL restrictions)
+        request.env['mail.activity'].sudo().create({
+            'activity_type_id': activity_type,
+            'res_id': 0,  # No specific record id
+            'res_model_id': default_model_id,  # Provide a default or placeholder model ID
+            'summary': f"General Status Update: From UDDOGI",
+            'note': f"Message: {message}",
+            'user_id': request.env.user.id,
+            'date_deadline': fields.Date.today(),
+        })
