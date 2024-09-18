@@ -16,8 +16,11 @@ class SaleOrderStatusController(http.Controller):
 
         bearer_token = token[len('Bearer '):]
 
+        # Fetch the global API key from system parameters
+        global_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+
         # Validate the Bearer token
-        if not self.validate_bearer_token(bearer_token):
+        if bearer_token != global_api_key:
             return {'error': 'Invalid Bearer token.'}
 
         # Create a general notification activity
@@ -26,16 +29,8 @@ class SaleOrderStatusController(http.Controller):
             message=message
         )
 
-        # Return an empty response to indicate success
+        # Return a success response
         return {}
-
-    def validate_bearer_token(self, token):
-        """Validate the Bearer token with the global API key."""
-        # Fetch the global API key from system parameters
-        global_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
-
-        # Compare the provided token with the global API key
-        return token == global_api_key
 
     def create_general_notification_activity(self, status, message):
         """Create a general notification activity."""
@@ -46,7 +41,7 @@ class SaleOrderStatusController(http.Controller):
             'activity_type_id': activity_type,
             'res_id': False,  # No specific record id
             'res_model_id': False,  # No specific model id
-            'summary': f"General Status Update: {status}",
+            'summary': f"General Status Update: From UDDOGI",
             'note': f"Message: {message}",
             'user_id': self.env.user.id,
             'date_deadline': fields.Date.today(),
