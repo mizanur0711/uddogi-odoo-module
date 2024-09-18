@@ -1,26 +1,26 @@
 import logging
+import json
 from odoo import http, fields
 from odoo.http import request
-import json
 
 _logger = logging.getLogger(__name__)
 
-
 class SaleOrderStatusController(http.Controller):
 
-    @http.route('/api/v1/receive_status', type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route('/api/v1/receive_status', type='json', auth='public', methods=['POST'], csrf=False)
     def receive_status(self, **kwargs):
         _logger.info("Received request at /api/v1/receive_status")
 
-        # Print out the full request for debugging
-        _logger.info(f"Full request headers: {dict(request.httprequest.headers)}")
+        # Log the content type and the raw data for debugging
+        _logger.info(f"Content-Type: {request.httprequest.headers.get('Content-Type')}")
+        _logger.info(f"Raw request data: {request.httprequest.data}")
 
         try:
-            # Attempt to get the request body and parse it as JSON
-            request_data = json.loads(request.httprequest.data)
-            _logger.info(f"Received request body: {request_data}")
+            # Convert raw byte data to a string and parse it into a Python dictionary
+            request_data = json.loads(request.httprequest.data.decode('utf-8'))
+            _logger.info(f"Received JSON request body: {request_data}")
         except Exception as e:
-            _logger.error(f"Failed to parse request body: {str(e)}")
+            _logger.error(f"Error extracting JSON data: {str(e)}")
             return {'error': 'Invalid JSON payload'}
 
         # Extract status and message from request payload
@@ -61,15 +61,15 @@ class SaleOrderStatusController(http.Controller):
 
     def create_general_notification_activity(self, status, message):
         """Create a general notification activity."""
-        activity_type = self.env.ref('mail.mail_activity_data_todo').id
+        activity_type = request.env.ref('mail.mail_activity_data_todo').id
 
         # Create a general notification activity (not tied to any specific sale order)
-        self.env['mail.activity'].create({
+        request.env['mail.activity'].create({
             'activity_type_id': activity_type,
             'res_id': False,  # No specific record id
             'res_model_id': False,  # No specific model id
             'summary': f"General Status Update: From UDDOGI",
             'note': f"Message: {message}",
-            'user_id': self.env.user.id,
+            'user_id': request.env.user.id,
             'date_deadline': fields.Date.today(),
         })
