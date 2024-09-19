@@ -67,11 +67,11 @@ class DateRangeWizard(models.TransientModel):
             raise UserError(f"Request failed: {str(e)}")
 
         if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
+            # Close the wizard and display a notification
             return {
-                'type': 'ir.actions.client',
-                'tag': 'reload',  # Close the wizard by reloading the view
-                'params': {
-                    'next': {
+                'type': 'ir.actions.act_window_close',  # Explicitly close the wizard
+                'infos': {
+                    'next_action': {
                         'type': 'ir.actions.client',
                         'tag': 'display_notification',
                         'params': {
