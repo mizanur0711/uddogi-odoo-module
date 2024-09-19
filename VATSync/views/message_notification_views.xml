@@ -1,0 +1,14 @@
+<odoo>
+<record id="view_notification_message_tree" model="ir.ui.view">
+    <field name="name">notification.message.tree</field>
+    <field name="model">notification.message</field>
+    <field name="arch" type="xml">
+        <tree>
+            <field name="name"/>
+            <field name="message"/>
+            <field name="notification_type"/>
+        </tree>
+    </field>
+</record>
+<menuitem id="menu_notification_message_root" name="Notification Messages"  parent="sale.sale_menu_root" sequence="26" action="action_notification_message"/>
+</odoo>

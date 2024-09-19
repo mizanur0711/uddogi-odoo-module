@@ -10,6 +10,7 @@
     'maintainer': 'Nascenia Limited',
     'data': [
         'views/date_range_wizard_views.xml',
+        'views/message_notifications_views.xml',
         'views/vat_bangladesh_action_menu.xml',
         'views/sale_order_views.xml',
         'views/product_template_views.xml',
