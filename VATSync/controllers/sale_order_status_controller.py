@@ -1,7 +1,7 @@
-import logging
-import json
-from odoo import http, fields
+from odoo import models, fields, http
 from odoo.http import request
+import json
+import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -41,23 +41,30 @@ class SaleOrderStatusController(http.Controller):
             return {'error': 'Invalid Bearer token.'}
 
         # Store the notification in the notification.message model
-        notification = request.env['notification.message'].sudo().create({
-            'name': 'Notification',
-            'message': message,
-            'notification_type': 'success' if status else 'error'
-        })
+        try:
+            notification = request.env['notification.message'].sudo().create({
+                'name': 'Notification',
+                'message': message,
+                'notification_type': 'success' if status else 'error'
+            })
+            _logger.info(f"Notification created: {notification.id}")
+        except Exception as e:
+            _logger.error(f"Error creating notification: {str(e)}")
+            return {'error': 'Error creating notification.'}
 
         # Create an activity based on the notification
-        request.env['mail.activity'].sudo().create({
-            'activity_type_id': request.env.ref('mail.mail_activity_data_todo').id,
-            'res_id': request.env.user.partner_id.id,
-            'res_model_id': request.env.ref('base.model_res_partner').id,
-            'summary': notification.name,
-            'note': notification.message,
-            'date_deadline': fields.Date.today()  # Set a deadline for the activity
-        })
+        try:
+            activity = request.env['mail.activity'].sudo().create({
+                'activity_type_id': request.env.ref('mail.mail_activity_data_todo').id,
+                'res_id': request.env.user.partner_id.id,
+                'res_model_id': request.env.ref('base.model_res_partner').id,
+                'summary': notification.name,
+                'note': notification.message,
+                'date_deadline': fields.Datetime.now()  # Use current date and time for deadline
+            })
+            _logger.info(f"Activity created: {activity.id}")
+        except Exception as e:
+            _logger.error(f"Error creating activity: {str(e)}")
+            return {'error': 'Error creating activity.'}
 
-        return {
-            'status': 'success',
-            'message': 'Notification message stored and activity created successfully.'
-        }
+        return {}
