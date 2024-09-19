@@ -60,21 +60,13 @@
         <field name="target">current</field>
     </record>
 
-    <menuitem id="menu_notification_message_root"
+    <menuitem id="menu_notification_root"
               name="Notifications"
               sequence="100"/>
 
-    <menuitem id="menu_notification_message"
+    <menuitem id="menu_notification_messages"
               name="Notification Messages"
-              parent="menu_notification_message_root"
-              sequence="1"
-              action="action_notification_message"/>
-
-    <!-- Optional: Add this menu to the Sales app if it's installed -->
-    <menuitem id="menu_notification_message_sales"
-              name="Notifications"
-              parent="sale.sale_menu_root"
-              sequence="16"
+              parent="menu_notification_root"
               action="action_notification_message"
-              groups="sales_team.group_sale_manager"/>
+              sequence="10"/>
 </odoo>

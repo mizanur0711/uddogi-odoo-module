@@ -69,6 +69,14 @@ class SaleOrderStatusController(http.Controller):
                     })
                     _logger.info(f"Activity created for user {user.name}: {activity.id}")
 
+                    # Create a message in the user's chatter
+                    user.sudo().message_post(
+                        body=f"Status Update: {message}",
+                        message_type='notification',
+                        subtype_xmlid='mail.mt_note',
+                    )
+                    _logger.info(f"Message posted to user's chatter: {user.name}")
+
                 # Commit the transaction
                 request.env.cr.commit()
 
@@ -76,4 +84,4 @@ class SaleOrderStatusController(http.Controller):
             _logger.error(f"Error processing notification and activities: {str(e)}")
             return {'error': f'Error processing notification and activities: {str(e)}'}
 
-        return {}
+        return {'success': True, 'message': 'Notification and activities created successfully for all users.'}
