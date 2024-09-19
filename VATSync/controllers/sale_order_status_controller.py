@@ -1,7 +1,7 @@
-from odoo import http
-from odoo.http import request
 import logging
 import json
+from odoo import http, fields
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
@@ -21,7 +21,9 @@ class SaleOrderStatusController(http.Controller):
         status = request_data.get('status')
         message = request_data.get('message', 'No message provided')
 
-        # Extract Bearer token from headers
+        _logger.info(f"Received status: {status}")
+        _logger.info(f"Received message: {message}")
+
         token = request.httprequest.headers.get('Authorization')
         _logger.info(f"Received Authorization header: {token}")
 
@@ -31,24 +33,31 @@ class SaleOrderStatusController(http.Controller):
 
         bearer_token = token[len('Bearer '):]
 
-        # Fetch the global API key from system parameters
         global_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
         _logger.info(f"Global API key from config: {global_api_key}")
 
-        # Validate the Bearer token
         if bearer_token != global_api_key:
             _logger.error('Invalid Bearer token.')
             return {'error': 'Invalid Bearer token.'}
 
-        # Create an activity or notification in Odoo (on sale orders, or another model)
-        model = request.env['sale.order']  # Change to your desired model
-        orders = model.search([])  # Add filtering logic if needed
+        # Store the notification in the notification.message model
+        notification = request.env['notification.message'].sudo().create({
+            'name': 'Notification',
+            'message': message,
+            'notification_type': 'success' if status else 'error'
+        })
 
-        for order in orders:
-            order.activity_schedule(
-                'mail.mail_activity_data_todo',  # Activity type
-                user_id=order.user_id.id,  # Notify the responsible user
-                note=f'{message}',  # Display the message from the webhook
-            )
+        # Create an activity based on the notification
+        request.env['mail.activity'].sudo().create({
+            'activity_type_id': request.env.ref('mail.mail_activity_data_todo').id,
+            'res_id': request.env.user.partner_id.id,
+            'res_model_id': request.env.ref('base.model_res_partner').id,
+            'summary': notification.name,
+            'note': notification.message,
+            'date_deadline': fields.Date.today()  # Set a deadline for the activity
+        })
 
-        return {'success': True, 'message': 'Notifications created successfully'}
+        return {
+            'status': 'success',
+            'message': 'Notification message stored and activity created successfully.'
+        }
