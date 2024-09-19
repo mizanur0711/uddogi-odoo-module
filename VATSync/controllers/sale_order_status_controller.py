@@ -40,31 +40,37 @@ class SaleOrderStatusController(http.Controller):
             _logger.error('Invalid Bearer token.')
             return {'error': 'Invalid Bearer token.'}
 
-        # Store the notification in the notification.message model
         try:
-            notification = request.env['notification.message'].sudo().create({
-                'name': 'Notification',
-                'message': message,
-                'notification_type': 'success' if status else 'error'
-            })
-            _logger.info(f"Notification created: {notification.id}")
-        except Exception as e:
-            _logger.error(f"Error creating notification: {str(e)}")
-            return {'error': 'Error creating notification.'}
+            with request.env.cr.savepoint():
+                # Store the notification in the notification.message model
+                notification = request.env['notification.message'].sudo().create({
+                    'name': 'Status Update Notification',
+                    'message': message,
+                    'notification_type': 'success' if status else 'error'
+                })
+                _logger.info(f"Notification created: {notification.id}")
 
-        # Create an activity based on the notification
-        try:
-            activity = request.env['mail.activity'].sudo().create({
-                'activity_type_id': request.env.ref('mail.mail_activity_data_todo').id,
-                'res_id': request.env.user.partner_id.id,
-                'res_model_id': request.env.ref('base.model_res_partner').id,
-                'summary': notification.name,
-                'note': notification.message,
-                'date_deadline': fields.Datetime.now()  # Use current date and time for deadline
-            })
-            _logger.info(f"Activity created: {activity.id}")
+                # Create an activity based on the notification
+                activity_type_id = request.env.ref('mail.mail_activity_data_todo').id
+                model_id = request.env.ref('base.model_res_users').id  # Changed to res.users model
+                user_to_notify = request.env['res.users'].sudo().search([], limit=1)  # Get a user to notify
+
+                activity = request.env['mail.activity'].sudo().create({
+                    'activity_type_id': activity_type_id,
+                    'res_id': user_to_notify.id,
+                    'res_model_id': model_id,
+                    'user_id': user_to_notify.id,
+                    'summary': notification.name,
+                    'note': notification.message,
+                    'date_deadline': fields.Date.today()
+                })
+                _logger.info(f"Activity created: {activity.id}")
+
+                # Commit the transaction
+                request.env.cr.commit()
+
         except Exception as e:
-            _logger.error(f"Error creating activity: {str(e)}")
-            return {'error': 'Error creating activity.'}
+            _logger.error(f"Error processing notification and activity: {str(e)}")
+            return {'error': 'Error processing notification and activity.'}
 
         return {}

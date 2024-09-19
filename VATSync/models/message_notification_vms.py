@@ -1,3 +1,4 @@
+# message_notification_vms.py
 from odoo import models, fields
 
 class NotificationMessage(models.Model):
