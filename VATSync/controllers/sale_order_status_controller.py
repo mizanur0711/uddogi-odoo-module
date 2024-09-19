@@ -45,14 +45,22 @@ class SaleOrderStatusController(http.Controller):
             _logger.error('Invalid Bearer token.')
             return {'error': 'Invalid Bearer token.'}
 
+        # Determine notification type based on status
+        if status:
+            notification_type = 'success'
+            title = 'Success'
+        else:
+            notification_type = 'danger'
+            title = 'Error'
+
         # Display a notification with the message from the request
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Success',
+                'title': title,
                 'message': message,  # Use message from the request payload
-                'type': 'success',
+                'type': notification_type,
                 'sticky': False,
             }
         }
