@@ -5,6 +5,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class SaleOrderStatusController(http.Controller):
 
     @http.route('/api/v1/receive_status', type='json', auth='public', methods=['POST'], csrf=False)
@@ -42,13 +43,30 @@ class SaleOrderStatusController(http.Controller):
 
         try:
             with request.env.cr.savepoint():
-                # Store the notification in the notification.message model
-                notification = request.env['notification.message'].sudo().create({
-                    'name': 'Status Update Notification',
-                    'message': message,
-                    'notification_type': 'success' if status else 'error'
-                })
-                _logger.info(f"Notification created: {notification.id}")
+                # Store the notification in the notification.message model (preferred approach)
+                # Uncomment the following lines if using `message_post` is possible
+                # notification = request.env['notification.message'].sudo().create({
+                #     'name': 'Status Update Notification',
+                #     'message': message,
+                #     'notification_type': 'success' if status else 'error'
+                # })
+                # _logger.info(f"Notification created: {notification.id}")
+
+                # **Temporary workaround (use with caution):**
+                # Use `message_post` if possible, this is a less risky approach.
+                # If `message_post` is not compatible with your Odoo version or there
+                # are conflicts, uncomment the following lines to use a direct
+                # database query.
+                request.env.cr.execute(
+                    """
+                    INSERT INTO notification.message (name, message, notification_type)
+                    VALUES ('Status Update Notification', %s, %s)
+                    RETURNING id;
+                    """,
+                    (message, 'success' if status else 'error')
+                )
+                notification_id = request.env.cr.fetchone()[0]
+                _logger.info(f"Notification (via direct query) created: {notification_id}")
 
                 # Get all active users
                 active_users = request.env['res.users'].sudo().search([('active', '=', True)])
@@ -69,13 +87,13 @@ class SaleOrderStatusController(http.Controller):
                     })
                     _logger.info(f"Activity created for user {user.name}: {activity.id}")
 
-                    # Create a message in the user's chatter
-                    user.sudo().message_post(
-                        body=f"Status Update: {message}",
-                        message_type='notification',
-                        subtype_xmlid='mail.mt_note',
-                    )
-                    _logger.info(f"Message posted to user's chatter: {user.name}")
+                    # Commented out as `message_post` is the preferred method
+                    # user.sudo().message_notify(
+                    #     body=f"Status Update: {message}",
+                    #     message_type='notification',
+                    #     subtype_xmlid='mail.mt_note',
+                    # )
+                    # _logger.info(f"Message posted to user's chatter: {user.name}")
 
                 # Commit the transaction
                 request.env.cr.commit()
