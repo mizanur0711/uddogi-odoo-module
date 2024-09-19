@@ -50,27 +50,30 @@ class SaleOrderStatusController(http.Controller):
                 })
                 _logger.info(f"Notification created: {notification.id}")
 
-                # Create an activity based on the notification
-                activity_type_id = request.env.ref('mail.mail_activity_data_todo').id
-                model_id = request.env.ref('base.model_res_users').id  # Changed to res.users model
-                user_to_notify = request.env['res.users'].sudo().search([], limit=1)  # Get a user to notify
+                # Get all active users
+                active_users = request.env['res.users'].sudo().search([('active', '=', True)])
 
-                activity = request.env['mail.activity'].sudo().create({
-                    'activity_type_id': activity_type_id,
-                    'res_id': user_to_notify.id,
-                    'res_model_id': model_id,
-                    'user_id': user_to_notify.id,
-                    'summary': notification.name,
-                    'note': notification.message,
-                    'date_deadline': fields.Date.today()
-                })
-                _logger.info(f"Activity created: {activity.id}")
+                # Create an activity for each active user
+                activity_type_id = request.env.ref('mail.mail_activity_data_todo').id
+                model_id = request.env.ref('base.model_res_users').id
+
+                for user in active_users:
+                    activity = request.env['mail.activity'].sudo().create({
+                        'activity_type_id': activity_type_id,
+                        'res_id': user.id,
+                        'res_model_id': model_id,
+                        'user_id': user.id,
+                        'summary': 'Status Update Notification',
+                        'note': f"Status: {'Success' if status else 'Error'}\n\nMessage: {message}",
+                        'date_deadline': fields.Date.today()
+                    })
+                    _logger.info(f"Activity created for user {user.name}: {activity.id}")
 
                 # Commit the transaction
                 request.env.cr.commit()
 
         except Exception as e:
-            _logger.error(f"Error processing notification and activity: {str(e)}")
-            return {'error': 'Error processing notification and activity.'}
+            _logger.error(f"Error processing notification and activities: {str(e)}")
+            return {'error': f'Error processing notification and activities: {str(e)}'}
 
         return {}
