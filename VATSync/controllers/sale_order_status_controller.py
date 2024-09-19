@@ -70,7 +70,7 @@ class SaleOrderStatusController(http.Controller):
                     _logger.info(f"Activity created for user {user.name}: {activity.id}")
 
                     # Create a message in the user's chatter
-                    user.sudo().message_notify(
+                    user.sudo().message_post(
                         body=f"Status Update: {message}",
                         message_type='notification',
                         subtype_xmlid='mail.mt_note',
