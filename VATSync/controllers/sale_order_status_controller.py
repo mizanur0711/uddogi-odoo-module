@@ -1,10 +1,9 @@
 import logging
 import json
-from odoo import http, fields
+from odoo import http
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
-
 
 class SaleOrderStatusController(http.Controller):
 
@@ -46,33 +45,14 @@ class SaleOrderStatusController(http.Controller):
             _logger.error('Invalid Bearer token.')
             return {'error': 'Invalid Bearer token.'}
 
-        # Create a general notification activity
-        self.create_general_notification_activity(
-            status=status,
-            message=message
-        )
-
-        _logger.info("Notification activity created successfully.")
-        # Return a success response
-        return {}
-
-    def create_general_notification_activity(self, status, message):
-        """Create a general notification activity."""
-        # Use http.request.env to access the environment
-        env = request.env
-
-        activity_type = env.ref('mail.mail_activity_data_todo').id
-
-        # Provide a default model ID (you can choose a model that is unlikely to cause issues)
-        default_model_id = env.ref('base.model_res_users').id
-
-        # Create a general notification activity (using sudo to bypass ACL restrictions)
-        env['mail.activity'].sudo().create({
-            'activity_type_id': activity_type,
-            'res_id': 0,  # No specific record id
-            'res_model_id': default_model_id,  # Provide a default or placeholder model ID
-            'summary': f"General Status Update: From UDDOGI",
-            'note': f"Message: {message}",
-            'user_id': env.user.id,
-            'date_deadline': fields.Date.today(),
-        })
+        # Display a notification with the message from the request
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success',
+                'message': message,  # Use message from the request payload
+                'type': 'success',
+                'sticky': False,
+            }
+        }
