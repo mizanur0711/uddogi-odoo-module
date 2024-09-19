@@ -4,7 +4,7 @@
         <field name="name">notification.message.tree</field>
         <field name="model">notification.message</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree string="Notification Messages">
                 <field name="name"/>
                 <field name="message"/>
                 <field name="notification_type"/>
@@ -12,7 +12,24 @@
         </field>
     </record>
 
-    <!-- Define the action to display notification messages -->
+    <!-- Define the form view for notification messages (if needed) -->
+    <record id="view_notification_message_form" model="ir.ui.view">
+        <field name="name">notification.message.form</field>
+        <field name="model">notification.message</field>
+        <field name="arch" type="xml">
+            <form string="Notification Message">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="message"/>
+                        <field name="notification_type"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Define the action to open the notification messages view -->
     <record id="action_notification_message" model="ir.actions.act_window">
         <field name="name">Notification Messages</field>
         <field name="res_model">notification.message</field>
@@ -21,14 +38,10 @@
         <field name="target">current</field>
     </record>
 
-    <!-- Parent menu item -->
-    <menuitem id="menu_notification_message_root"
-              name="Notification Messages"
-              sequence="20"/>
-
-    <!-- Child menu item linked to the action -->
+    <!-- Define the parent menu item under Sales module -->
     <menuitem id="menu_notification_message"
-              name="Messages"
-              parent="menu_notification_message_root"
+              name="Notification Messages"
+              parent="sale.sale_menu_root"
+              sequence="16"
               action="action_notification_message"/>
 </odoo>
