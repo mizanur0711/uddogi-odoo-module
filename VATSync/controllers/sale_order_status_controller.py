@@ -1,7 +1,7 @@
-import logging
-import json
 from odoo import http
 from odoo.http import request
+import logging
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -12,19 +12,14 @@ class SaleOrderStatusController(http.Controller):
         _logger.info("Received request at /api/v1/receive_status")
 
         try:
-            # Convert raw byte data to a string and parse it into a Python dictionary
             request_data = json.loads(request.httprequest.data.decode('utf-8'))
             _logger.info(f"Received JSON request body: {request_data}")
         except Exception as e:
             _logger.error(f"Error extracting JSON data: {str(e)}")
             return {'error': 'Invalid JSON payload'}
 
-        # Extract status and message from request payload
         status = request_data.get('status')
         message = request_data.get('message', 'No message provided')
-
-        _logger.info(f"Received status: {status}")
-        _logger.info(f"Received message: {message}")
 
         # Extract Bearer token from headers
         token = request.httprequest.headers.get('Authorization')
@@ -45,22 +40,15 @@ class SaleOrderStatusController(http.Controller):
             _logger.error('Invalid Bearer token.')
             return {'error': 'Invalid Bearer token.'}
 
-        # Determine notification type based on status
-        if status:
-            notification_type = 'success'
-            title = 'Success'
-        else:
-            notification_type = 'danger'
-            title = 'Error'
+        # Create an activity or notification in Odoo (on sale orders, or another model)
+        model = request.env['sale.order']  # Change to your desired model
+        orders = model.search([])  # Add filtering logic if needed
 
-        # Display a notification with the message from the request
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': title,
-                'message': message,  # Use message from the request payload
-                'type': notification_type,
-                'sticky': False,
-            }
-        }
+        for order in orders:
+            order.activity_schedule(
+                'mail.mail_activity_data_todo',  # Activity type
+                user_id=order.user_id.id,  # Notify the responsible user
+                note=f'{message}',  # Display the message from the webhook
+            )
+
+        return {'success': True, 'message': 'Notifications created successfully'}
