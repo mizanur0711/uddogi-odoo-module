@@ -60,13 +60,6 @@
         <field name="target">current</field>
     </record>
 
-    <menuitem id="menu_notification_root"
-              name="Notifications"
-              sequence="100"/>
-
-    <menuitem id="menu_notification_messages"
-              name="Notification Messages"
-              parent="menu_notification_root"
-              action="action_notification_message"
-              sequence="10"/>
+<menuitem id="menu_notification_message_root" name="Notification Messages" sequence="20"/>
+<menuitem id="menu_notification_message" name="Messages" parent="menu_notification_message_root" action="action_notification_message"/>
 </odoo>
