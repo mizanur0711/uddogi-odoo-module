@@ -67,22 +67,10 @@ class DateRangeWizard(models.TransientModel):
             raise UserError(f"Request failed: {str(e)}")
 
         if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
-            # Close the wizard and display a notification
             return {
-                'type': 'ir.actions.act_window_close',  # Explicitly close the wizard
-                'infos': {
-                    'next_action': {
-                        'type': 'ir.actions.client',
-                        'tag': 'display_notification',
-                        'params': {
-                            'title': 'Success',
-                            'message': 'Data processing initiated successfully.',
-                            'type': 'success',
-                            'sticky': False,
-                        }
-                    }
-                }
+                'type': 'ir.actions.act_window_close',  # This closes the wizard window
             }
         else:
             _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
             raise UserError(f'Failed to process data! Status: {response.status_code}')
+
