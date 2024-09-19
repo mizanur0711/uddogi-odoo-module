@@ -84,4 +84,4 @@ class SaleOrderStatusController(http.Controller):
             _logger.error(f"Error processing notification and activities: {str(e)}")
             return {'error': f'Error processing notification and activities: {str(e)}'}
 
-        return {'success': True, 'message': 'Notification and activities created successfully for all users.'}
+        return {}
