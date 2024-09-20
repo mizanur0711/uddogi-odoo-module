@@ -60,10 +60,10 @@
         <field name="target">current</field>
     </record>
 
-    <!-- Define the menu for Notification Messages -->
+
     <menuitem id="menu_notification_message"
               name="Notification Messages"
               parent="sale.sale_menu_root"
-              sequence="35"
+              sequence="10"
               action="action_notification_message"/>
 </odoo>
