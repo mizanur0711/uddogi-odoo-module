@@ -26,6 +26,7 @@
     'assets': {
             'web.assets_backend': [
                 'VATSync/static/src/img/uddogi.png',
+                'VATSync/static/src/css/custom_style.css',
             ],
         },
     'installable': True,

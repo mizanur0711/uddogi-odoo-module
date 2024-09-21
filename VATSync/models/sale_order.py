@@ -40,28 +40,55 @@ class SaleOrder(models.Model):
 
     def action_generate_mushak_pdf(self):
         """Button for 6.3 to get the Mushak PDF URL."""
-        api_url = 'http://localhost:3000/api/v1/generate_mushak_pdf'
-        user_api_key = self.env.user.api_key
 
-        headers = {'X-API-KEY': user_api_key}
-        data = {'sale_number': self.name}  # Assuming sale number is in 'name' field
+        # Dynamically fetch the API base URL from system parameters
+        api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
+        if not api_base_url:
+            raise UserError("Mushak API base URL is not configured in the settings.")
 
-        response = requests.get(api_url, headers=headers, params=data)
+        # Complete API URL for PDF generation
+        api_url = f"{api_base_url}/api/v1/generate_mushak_pdf"
 
-        if response.status_code == 200:
-            response_data = response.json()
-            pdf_url = response_data.get('url')
+        # Fetch the user's API key (can be stored in config parameters)
+        user_api_key = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+        if not user_api_key:
+            raise UserError("Mushak API key is not configured in the settings.")
 
-            if pdf_url:
-                return {
-                    'type': 'ir.actions.act_url',
-                    'url': pdf_url,
-                    'target': 'new'
-                }
+        # Set the headers with Bearer token and JSON content type
+        headers = {
+            'Authorization': f'Bearer {user_api_key}',
+            'Content-Type': 'application/json'
+        }
+
+        # Prepare the data (assuming sale number is stored in 'name' field)
+        data = {'sale_number': self.name}
+
+        # Sending the API request
+        try:
+            response = requests.get(api_url, headers=headers, json=data)
+
+            # If the request is successful
+            if response.status_code == 200:
+                response_data = response.json()
+                pdf_url = response_data.get('url')
+
+                if pdf_url:
+                    # Open the received PDF URL in a new tab
+                    return {
+                        'type': 'ir.actions.act_url',
+                        'url': pdf_url,
+                        'target': 'new'
+                    }
+                else:
+                    raise UserError("No URL returned from the Mushak API!")
             else:
-                raise UserError('No URL returned from API!')
-        else:
+                raise UserError(f"Failed to generate Mushak PDF! Status code: {response.status_code}")
+
+        except requests.exceptions.RequestException as e:
+            raise UserError(f"API request failed: {str(e)}")
+
             raise UserError('Failed to generate Mushak PDF!')
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
