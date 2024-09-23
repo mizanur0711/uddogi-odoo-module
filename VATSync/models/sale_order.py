@@ -67,11 +67,11 @@ class SaleOrder(models.Model):
         try:
             response = requests.get(api_url, headers=headers, json=data)
 
-            # If the request is successful
-            if response.status_code == 200:
-                response_data = response.json()
+            # Check the response status in the JSON data
+            try:
+                response_data = response.json()  # Parse the JSON response
 
-                # Check if the status is "ok" and get the "m_6_3_url"
+                # Check if the status is "ok"
                 if response_data.get('status') == 'ok':
                     pdf_url = response_data.get('m_6_3_url')
 
@@ -87,9 +87,9 @@ class SaleOrder(models.Model):
                 else:
                     raise UserError(f"API returned an error: {response_data.get('message', 'Unknown error')}")
 
-            else:
-                raise UserError(f"Failed to generate Mushak PDF! Status code: {response.status_code}, Response: {response.text}")
-
+            except ValueError:
+                raise UserError(
+                    f"Failed to decode JSON response. Status code: {response.status_code}, Response: {response.text}")
 
         except requests.exceptions.RequestException as e:
             raise UserError(f"API request failed: {str(e)}")
