@@ -74,7 +74,7 @@ class SaleOrder(models.Model):
             response.raise_for_status()  # Raises an HTTPError for bad responses
 
             response_data = response.json()
-            pdf_url = response_data.get('url')
+            pdf_url = response_data.get('m_6_3_url')
 
             if not pdf_url:
                 raise UserError("No URL returned from the Mushak API!")
