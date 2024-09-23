@@ -73,11 +73,18 @@ class SaleOrder(models.Model):
             response = session.get(api_url, json=data)
             response.raise_for_status()  # Raises an HTTPError for bad responses
 
-            response_data = response.json()
-            pdf_url = response_data.get('m_6_3_url')
+            try:
+                response_data = response.json()
+            except ValueError:
+                raise UserError("Failed to decode JSON response from the Mushak API!")
 
+            pdf_url = response_data.get('m_6_3_url')
             if not pdf_url:
                 raise UserError("No URL returned from the Mushak API!")
+
+            # Ensure the PDF URL is valid
+            if not pdf_url.startswith('http'):
+                raise UserError("Invalid URL received from the Mushak API!")
 
             # Second request: Get the PDF content
             pdf_response = session.get(pdf_url)
@@ -87,10 +94,10 @@ class SaleOrder(models.Model):
             if 'application/pdf' not in pdf_response.headers.get('Content-Type', ''):
                 raise UserError("The URL did not return a PDF file.")
 
-            # Generate a unique filename
-            filename = f"mushak_6_3_{self.name}.pdf"
+            # Generate a unique filename, ensure it's safe
+            filename = f"mushak_6_3_{self.name.replace('/', '_')}.pdf"
 
-            # Save the PDF content to a temporary file
+            # Save the PDF content to a temporary file as attachment
             pdf_content = pdf_response.content
             attachment = self.env['ir.attachment'].create({
                 'name': filename,
