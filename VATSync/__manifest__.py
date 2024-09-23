@@ -27,6 +27,7 @@
             'web.assets_backend': [
                 'VATSync/static/src/img/uddogi.png',
                 'VATSync/static/src/css/custom_style.css',
+                'VATSync/static/src/js/generate_mushak.js',
             ],
         },
     'installable': True,
