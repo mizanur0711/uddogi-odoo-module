@@ -70,24 +70,28 @@ class SaleOrder(models.Model):
             # If the request is successful
             if response.status_code == 200:
                 response_data = response.json()
-                pdf_url = response_data.get('url')
 
-                if pdf_url:
-                    # Open the received PDF URL in a new tab
-                    return {
-                        'type': 'ir.actions.act_url',
-                        'url': pdf_url,
-                        'target': 'new'
-                    }
+                # Check if the status is "ok" and get the "m_6_3_url"
+                if response_data.get('status') == 'ok':
+                    pdf_url = response_data.get('m_6_3_url')
+
+                    if pdf_url:
+                        # Open the received PDF URL in a new tab
+                        return {
+                            'type': 'ir.actions.act_url',
+                            'url': pdf_url,
+                            'target': 'new'
+                        }
+                    else:
+                        raise UserError("No m_6_3_url returned from the Mushak API!")
                 else:
-                    raise UserError("No URL returned from the Mushak API!")
+                    raise UserError(f"API returned an error: {response_data.get('message', 'Unknown error')}")
+
             else:
                 raise UserError(f"Failed to generate Mushak PDF! Status code: {response.status_code}")
 
         except requests.exceptions.RequestException as e:
             raise UserError(f"API request failed: {str(e)}")
-
-            raise UserError('Failed to generate Mushak PDF!')
 
 
 class SaleOrderLine(models.Model):
