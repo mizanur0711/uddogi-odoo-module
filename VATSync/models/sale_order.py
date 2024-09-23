@@ -88,7 +88,8 @@ class SaleOrder(models.Model):
                     raise UserError(f"API returned an error: {response_data.get('message', 'Unknown error')}")
 
             else:
-                raise UserError(f"Failed to generate Mushak PDF! Status code: {response.status_code}")
+                raise UserError(f"Failed to generate Mushak PDF! Status code: {response.status_code}, Response: {response.text}")
+
 
         except requests.exceptions.RequestException as e:
             raise UserError(f"API request failed: {str(e)}")
