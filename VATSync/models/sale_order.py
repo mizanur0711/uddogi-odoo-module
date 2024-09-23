@@ -1,5 +1,6 @@
 from odoo import models, fields, api
-from odoo.exceptions import UserError
+from odoo import http
+from odoo.http import request
 import requests
 
 class SaleOrder(models.Model):
@@ -39,57 +40,75 @@ class SaleOrder(models.Model):
             order.amount_total_with_taxes = total
 
     def action_generate_mushak_pdf(self):
-        """Button for 6.3 to get the Mushak PDF URL."""
+        """Button for 6.3 to download the Mushak PDF via proxy controller."""
 
-        # Dynamically fetch the API base URL from system parameters
-        api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
-        if not api_base_url:
-            raise UserError("Mushak API base URL is not configured in the settings.")
-
-        # Complete API URL for PDF generation
-        api_url = f"{api_base_url}/api/v1/generate_mushak_pdf"
-
-        # Fetch the user's API key (can be stored in config parameters)
-        user_api_key = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
-        if not user_api_key:
-            raise UserError("Mushak API key is not configured in the settings.")
-
-        # Set the headers with Bearer token and JSON content type
-        headers = {
-            'Authorization': f'Bearer {user_api_key}',
-            'Content-Type': 'application/json'
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/mushak/download_pdf/{self.id}',
+            'target': 'new'
         }
 
-        # Prepare the data (assuming sale number is stored in 'name' field)
-        data = {'sale_number': self.name}
+    class MushakPDFController(http.Controller):
 
-        # Sending the API request
-        try:
-            response = requests.get(api_url, headers=headers, json=data)
+        @http.route('/mushak/download_pdf/<int:order_id>', type='http', auth="user")
+        def download_mushak_pdf(self, order_id):
+            # Fetch the Sale Order
+            sale_order = request.env['sale.order'].sudo().browse(order_id)
 
-            # Parse the JSON response
+            # Dynamically fetch the API base URL from system parameters
+            api_base_url = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
+            if not api_base_url:
+                return request.not_found()
+
+            # Complete API URL for PDF generation
+            api_url = f"{api_base_url}/api/v1/generate_mushak_pdf"
+
+            # Fetch the user's API key
+            user_api_key = request.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+            if not user_api_key:
+                return request.not_found()
+
+            # Set the headers with Bearer token and JSON content type
+            headers = {
+                'Authorization': f'Bearer {user_api_key}',
+                'Content-Type': 'application/json'
+            }
+
+            # Prepare the data (assuming sale number is stored in 'name' field)
+            data = {'sale_number': sale_order.name}
+
+            # Send the API request
             try:
-                response_data = response.json()
+                response = requests.get(api_url, headers=headers, json=data)
 
-                # Only check for 'm_6_3_url'
-                pdf_url = response_data.get('m_6_3_url')
+                if response.status_code == 200:
+                    response_data = response.json()
 
-                if pdf_url:
-                    # Open the received PDF URL in a new tab
-                    return {
-                        'type': 'ir.actions.act_url',
-                        'url': pdf_url,
-                        'target': 'new'
-                    }
+                    # Get the PDF URL (m_6_3_url)
+                    pdf_url = response_data.get('m_6_3_url')
+
+                    if pdf_url:
+                        # Send the request to the PDF URL and return the PDF content
+                        pdf_response = requests.get(pdf_url, headers=headers)
+                        if pdf_response.status_code == 200:
+                            pdf_content = pdf_response.content
+
+                            # Serve the PDF file to the client
+                            return request.make_response(
+                                pdf_content,
+                                headers=[
+                                    ('Content-Type', 'application/pdf'),
+                                    ('Content-Disposition', f'attachment; filename="{sale_order.name}_Mushak.pdf"')
+                                ]
+                            )
+                        else:
+                            return request.not_found()
+                    else:
+                        return request.not_found()
                 else:
-                    raise UserError("No m_6_3_url returned from the Mushak API!")
-
-            except ValueError:
-                raise UserError(
-                    f"Failed to decode JSON response. Status code: {response.status_code}, Response: {response.text}")
-
-        except requests.exceptions.RequestException as e:
-            raise UserError(f"API request failed: {str(e)}")
+                    return request.not_found()
+            except requests.exceptions.RequestException as e:
+                return request.not_found()
 
 
 class SaleOrderLine(models.Model):
