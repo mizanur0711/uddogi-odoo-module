@@ -1,3 +1,4 @@
+import base64
 from odoo import models, fields, api
 from odoo.exceptions import UserError
 import requests
@@ -39,7 +40,7 @@ class SaleOrder(models.Model):
             order.amount_total_with_taxes = total
 
     def action_generate_mushak_pdf(self):
-        """Button for 6.3 to get the Mushak PDF URL."""
+        """Button for 6.3 to get the Mushak PDF URL and retrieve the PDF."""
 
         # Dynamically fetch the API base URL from system parameters
         api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
@@ -63,35 +64,55 @@ class SaleOrder(models.Model):
         # Prepare the data (assuming sale number is stored in 'name' field)
         data = {'sale_number': self.name}
 
-        # Sending the API request
+        # Create a session to maintain authorization across requests
+        session = requests.Session()
+        session.headers.update(headers)
+
         try:
-            response = requests.get(api_url, headers=headers, json=data)
+            # First request: Get the PDF URL
+            response = session.get(api_url, json=data)
+            response.raise_for_status()  # Raises an HTTPError for bad responses
 
-            # Parse the JSON response
-            try:
-                response_data = response.json()
+            response_data = response.json()
+            pdf_url = response_data.get('url')
 
-                # Only check for 'm_6_3_url'
-                pdf_url = response_data.get('m_6_3_url')
+            if not pdf_url:
+                raise UserError("No URL returned from the Mushak API!")
 
-                if pdf_url:
-                    # Return a client action to open the URL with authorization
-                    return {
-                        'type': 'ir.actions.client',
-                        'tag': 'open_url_with_auth',
-                        'target': 'new',
-                        'url': pdf_url,
-                        'headers': {'Authorization': f'Bearer {user_api_key}'}
-                    }
-                else:
-                    raise UserError("No m_6_3_url returned from the Mushak API!")
+            # Second request: Get the PDF content
+            pdf_response = session.get(pdf_url)
+            pdf_response.raise_for_status()
 
-            except ValueError:
-                raise UserError(
-                    f"Failed to decode JSON response. Status code: {response.status_code}, Response: {response.text}")
+            # Check if the content type is PDF
+            if 'application/pdf' not in pdf_response.headers.get('Content-Type', ''):
+                raise UserError("The URL did not return a PDF file.")
+
+            # Generate a unique filename
+            filename = f"mushak_6_3_{self.name}.pdf"
+
+            # Save the PDF content to a temporary file
+            pdf_content = pdf_response.content
+            attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf'
+            })
+
+            # Return an action to download the PDF
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}/{filename}?download=true',
+                'target': 'self',
+            }
 
         except requests.exceptions.RequestException as e:
             raise UserError(f"API request failed: {str(e)}")
+
+        finally:
+            session.close()
 
 
 class SaleOrderLine(models.Model):
