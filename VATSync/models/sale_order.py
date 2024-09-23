@@ -67,25 +67,22 @@ class SaleOrder(models.Model):
         try:
             response = requests.get(api_url, headers=headers, json=data)
 
-            # Check the response status in the JSON data
+            # Parse the JSON response
             try:
-                response_data = response.json()  # Parse the JSON response
+                response_data = response.json()
 
-                # Check if the status is "ok"
-                if response_data.get('status') == 'ok':
-                    pdf_url = response_data.get('m_6_3_url')
+                # Only check for 'm_6_3_url'
+                pdf_url = response_data.get('m_6_3_url')
 
-                    if pdf_url:
-                        # Open the received PDF URL in a new tab
-                        return {
-                            'type': 'ir.actions.act_url',
-                            'url': pdf_url,
-                            'target': 'new'
-                        }
-                    else:
-                        raise UserError("No m_6_3_url returned from the Mushak API!")
+                if pdf_url:
+                    # Open the received PDF URL in a new tab
+                    return {
+                        'type': 'ir.actions.act_url',
+                        'url': pdf_url,
+                        'target': 'new'
+                    }
                 else:
-                    raise UserError(f"API returned an error: {response_data.get('message', 'Unknown error')}")
+                    raise UserError("No m_6_3_url returned from the Mushak API!")
 
             except ValueError:
                 raise UserError(
