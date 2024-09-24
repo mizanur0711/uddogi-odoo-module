@@ -45,8 +45,8 @@
             <xpath expr="//header//button[@name='action_quotation_send']" position="after">
                 <button name="action_generate_mushak_pdf"
                         type="object"
-                        string="6.3"
-                        class="oe_highlight custom_round_button"/>
+                        string="VAT 6.3 Report"
+                        class="oe_highlight"/>
             </xpath>
         </field>
     </record>
