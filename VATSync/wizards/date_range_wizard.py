@@ -68,6 +68,15 @@ class DateRangeWizard(models.TransientModel):
 
         if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
             return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': 'Data processing initiated successfully.',
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }, {
                 'type': 'ir.actions.act_window_close',  # This closes the wizard window
             }
         else:
