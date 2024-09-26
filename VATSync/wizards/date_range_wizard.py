@@ -66,7 +66,21 @@ class DateRangeWizard(models.TransientModel):
             _logger.error(f"Request failed: {str(e)}")
             raise UserError(f"Request failed: {str(e)}")
 
-        if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
+        if response.status_code == 500:  # Handle server error
+            _logger.error("Server not responding (500 Internal Server Error).")
+            return [{
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Error',
+                    'message': 'Server not responding. Please try again later.',
+                    'type': 'danger',
+                    'sticky': False,
+                },
+            }, {
+                'type': 'ir.actions.act_window_close',  # This closes the wizard window
+            }]
+        elif response.status_code in [200, 204]:  # Handle both 200 and 204 as success
             return [{
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
@@ -82,4 +96,3 @@ class DateRangeWizard(models.TransientModel):
         else:
             _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
             raise UserError(f'Failed to process data! Status: {response.status_code}')
-
