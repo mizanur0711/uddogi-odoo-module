@@ -43,10 +43,9 @@ class SaleOrderStatusController(http.Controller):
 
         try:
             # Call the notify_user method in sale.order model to trigger notification
-            return request.env['sale.order'].sudo().notify_user(message, status)
+            return request.env['sale.order'].sudo().notify_user(message, status='success')
         except Exception as e:
-            _logger.error("Error sending notification: %s", e)
-            return {'status': 'error', 'message': str(e)}
+            return request.env['sale.order'].sudo().notify_user(message=str(e), status='error')
 
         # try:
         #     request.env['bus.bus']._sendone(

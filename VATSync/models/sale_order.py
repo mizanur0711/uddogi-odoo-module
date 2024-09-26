@@ -107,6 +107,10 @@ class SaleOrder(models.Model):
                 'res_id': self.id,
                 'mimetype': 'application/pdf'
             })
+            self.notify_user(
+                message='Mushak PDF generated successfully!',
+                status='success'
+            )
 
             # Return an action to download the PDF
             return {
@@ -116,27 +120,48 @@ class SaleOrder(models.Model):
             }
 
         except requests.exceptions.RequestException as e:
-            raise UserError(f"API request failed: {str(e)}")
+            return self.notify_user(
+                message='Server not responding. Please try again later.',
+                status='danger'
+            )
 
         finally:
             session.close()
 
+
     @api.model
     def notify_user(self, message, status):
-        # Logic for showing notification directly in UI
-        notification_type = 'success' if status else 'danger'
+        """Logic for showing notification directly in UI."""
+        notification_type = 'success' if status == 'success' else 'danger'
 
-        # Create and return the notification
+        # Return notification action for Odoo UI
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': 'VAT Bangladesh Status Update',
                 'message': message,
-                'type': notification_type,
+                'type': notification_type,  # Can be 'success', 'warning', 'danger', etc.
                 'sticky': False,  # Auto-hide the notification after a few seconds
             }
         }
+
+    # @api.model
+    # def notify_user(self, message, status):
+    #     # Logic for showing notification directly in UI
+    #     notification_type = 'success' if status else 'danger'
+    #
+    #     # Create and return the notification
+    #     return {
+    #         'type': 'ir.actions.client',
+    #         'tag': 'display_notification',
+    #         'params': {
+    #             'title': 'VAT Bangladesh Status Update',
+    #             'message': message,
+    #             'type': notification_type,
+    #             'sticky': False,  # Auto-hide the notification after a few seconds
+    #         }
+    #     }
 
     # @api.model
     # def notify_user(self, message, status):
