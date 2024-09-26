@@ -121,6 +121,44 @@ class SaleOrder(models.Model):
         finally:
             session.close()
 
+    @api.model
+    def notify_user(self, message, status):
+        # Logic for showing notification directly in UI
+        notification_type = 'success' if status else 'danger'
+
+        # Create and return the notification
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'VAT Bangladesh Status Update',
+                'message': message,
+                'type': notification_type,
+                'sticky': False,  # Auto-hide the notification after a few seconds
+            }
+        }
+
+    # @api.model
+    # def notify_user(self, message, status):
+    #     # Determine the type of notification
+    #     notification_type = 'success' if status == 'success' else 'danger'
+    #
+    #     # Get the current user (logged-in user in the session)
+    #     user_id = self.env.user.id
+    #
+    #     # Send notification to the current user via bus.bus
+    #     self.env['bus.bus']._sendone(
+    #         (self.env.cr.dbname, 'res.partner', user_id),  # Target user (based on their ID)
+    #         'notification',  # Type of message
+    #         {
+    #             'title': 'VAT Bangladesh Status Update',
+    #             'message': message,
+    #             'type': notification_type,  # 'success' or 'danger'
+    #             'sticky': False  # Notification auto-hides after a few seconds
+    #         }
+    #     )
+    #     return True
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'

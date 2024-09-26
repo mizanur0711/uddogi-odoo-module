@@ -8,6 +8,15 @@
                     <field name="start_date"/>
                     <field name="end_date"/>
                 </group>
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Short description below the date fields -->
+                        <p style="text-align: justify; margin: 0;">
+                            <strong>Please note:</strong> Ensure that the selected date range is valid for VAT calculation.
+                            The processed data will be sent to VAT Bangladesh for automatic transaction record generation.
+                        </p>
+                    </div>
+                </div>
                 <footer>
                     <button name="process_data" string="Process" type="object" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

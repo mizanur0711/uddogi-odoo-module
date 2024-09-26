@@ -11,3 +11,9 @@
 .custom_round_button:hover {
     background-color: greenyellow; /* Slightly darker green on hover */
 }
+
+.o_wizard_page p {
+    text-align: justify;
+    margin: 0;
+    line-height: 1.5; /* Adjust line height for better readability */
+}

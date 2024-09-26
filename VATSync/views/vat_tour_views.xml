@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="tour_vat_bangladesh" model="website.tour">
+        <field name="name">VAT Bangladesh Tour</field>
+        <field name="steps" type="xml">
+            <![CDATA[
+            [{
+                'title': 'VAT Bangladesh Menu',
+                'trigger': 'a[data-menu-xmlid="VATSync.menu_vat_bangladesh"]',
+                'content': 'Click here to access the VAT Bangladesh wizard for date range selection.',
+                'position': 'bottom'
+            },
+             {
+                'title': 'Generate VAT Report',
+                'trigger': 'button[name="action_generate_mushak_pdf"]',
+                'content': 'Click here to generate the VAT 6.3 Report through the VAT Bangladesh Calculation engine.',
+                'position': 'bottom'
+            }]
+            ]]>
+        </field>
+    </record>
+</odoo>

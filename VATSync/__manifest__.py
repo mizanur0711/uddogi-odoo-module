@@ -1,3 +1,4 @@
+
 {
     'name': 'VATSync - Uddogi for Odoo [Bangladesh]',
     'version': '1.0.10',
@@ -17,6 +18,7 @@
         'views/res_partner_views.xml',
         'views/hs_code_views.xml',
         'views/selling_branch_views.xml',
+        # 'views/vat_tour_views.xml',
         'views/res_config_settings_views.xml',
         'security/ir.model.access.csv',
     ],
@@ -28,6 +30,7 @@
                 'VATSync/static/src/img/uddogi.png',
                 'VATSync/static/src/css/custom_style.css',
                 'VATSync/static/src/js/generate_mushak.js',
+                # 'VATSync/static/src/js/start_vat_tour.js',
             ],
         },
     'installable': True,

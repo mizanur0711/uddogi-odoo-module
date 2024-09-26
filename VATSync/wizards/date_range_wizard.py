@@ -67,7 +67,7 @@ class DateRangeWizard(models.TransientModel):
             raise UserError(f"Request failed: {str(e)}")
 
         if response.status_code in [200, 204]:  # Handle both 200 and 204 as success
-            return {
+            return [{
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
@@ -78,7 +78,7 @@ class DateRangeWizard(models.TransientModel):
                 },
             }, {
                 'type': 'ir.actions.act_window_close',  # This closes the wizard window
-            }
+            }]
         else:
             _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
             raise UserError(f'Failed to process data! Status: {response.status_code}')

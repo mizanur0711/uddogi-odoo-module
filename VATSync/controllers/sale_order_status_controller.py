@@ -1,12 +1,13 @@
-from odoo import models, fields, http
+from odoo import http
+from odoo.exceptions import UserError
 from odoo.http import request
 import json
 import logging
+import requests as rqs
 
 _logger = logging.getLogger(__name__)
 
 class SaleOrderStatusController(http.Controller):
-
     @http.route('/api/v1/receive_status', type='json', auth='public', methods=['POST'], csrf=False)
     def receive_status(self, **kwargs):
         _logger.info("Received request at /api/v1/receive_status")
@@ -41,17 +42,40 @@ class SaleOrderStatusController(http.Controller):
             return {'error': 'Invalid Bearer token.'}
 
         try:
-            with request.env.cr.savepoint():
-                # Only store the notification in the notification.message model
-                notification = request.env['notification.message'].sudo().create({
-                    'name': 'Status Update Notification',
-                    'message': message,
-                    'notification_type': 'success' if status else 'error'
-                })
-                _logger.info(f"Notification created: {notification.id}")
-
+            # Call the notify_user method in sale.order model to trigger notification
+            return request.env['sale.order'].sudo().notify_user(message, status)
         except Exception as e:
-            _logger.error(f"Error saving notification: {str(e)}")
-            return {'error': f'Error saving notification: {str(e)}'}
+            _logger.error("Error sending notification: %s", e)
+            return {'status': 'error', 'message': str(e)}
 
-        return {}
+        # try:
+        #     request.env['bus.bus']._sendone(
+        #         'your_channel_name',  # Channel Name
+        #         'notification',  # Notification Type
+        #         {  # Message Payload
+        #             'title': 'VAT Bangladesh Status Update',
+        #             'message': message,
+        #             'type': 'success' if status == 'success' else 'danger',
+        #         }
+        #     )
+        # except Exception as e:
+        #     _logger.error("Error sending notification: %s", e)
+        #     return {'status': 'error', 'message': str(e)}
+
+        # # Send notification
+        # notification = {
+        #     'title': 'VAT Bangladesh Status Update',
+        #     'message': message,
+        #     'type': 'success' if status == 'success' else 'danger',
+        # }
+        # base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        # url = f"{base_url}/notify"
+        # response = rqs.post(url, json=notification)
+        #
+        # if response.status_code != 200:
+        #     _logger.error(f"Error sending notification: {response.text}")
+        #
+        # return {
+        #     'status': status,
+        #     'message': message,
+        # }

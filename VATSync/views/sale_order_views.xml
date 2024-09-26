@@ -46,8 +46,34 @@
                 <button name="action_generate_mushak_pdf"
                         type="object"
                         string="VAT 6.3 Report"
-                        class="oe_highlight"/>
+                        class="oe_highlight"
+                        title="This will generate the VAT 6.3 Report through the VAT Bangladesh Calculation engine."/>
             </xpath>
         </field>
     </record>
+
+
+<!--    test purpose button for notification-->
+    <record id="action_sale_order_notify" model="ir.actions.server">
+    <field name="name">Notify User</field>
+    <field name="model_id" ref="sale.model_sale_order"/>
+    <field name="binding_model_id" ref="sale.model_sale_order"/>
+    <field name="state">code</field>
+    <field name="code">
+        action = model.notify_user("VMS data", "success")
+    </field>
+</record>
+
+<record id="view_order_form_notify_button" model="ir.ui.view">
+    <field name="name">sale.order.notify.button</field>
+    <field name="model">sale.order</field>
+    <field name="inherit_id" ref="sale.view_order_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//header" position="inside">
+            <button name="%(action_sale_order_notify)d" string="Show Notification" type="action" class="btn-primary"/>
+        </xpath>
+    </field>
+</record>
+
+<!--    test purpose button for notification-->
 </odoo>

@@ -1,32 +1,41 @@
-odoo.define('your_module.open_url_with_auth', function (require) {
+// import { useService } from "@web/core/utils/hooks";
+//
+// export const useNotificationHandler = (env) => {
+//     const notificationService = useService("notification");
+//     const bus = useService("bus_service");
+//     bus.addChannel("your_channel_name");
+//     bus.addEventListener("notification", (ev) => {
+//         console.log("Notification Event Received:", ev);
+//     console.log("ev.detail:", ev.detail);
+//         ev.detail
+//             .filter(notif => notif.type === "your_channel_name")
+//             .forEach(({ payload }) => {
+//                 this.notificationService.add(payload.message, {
+//                     title: payload.title,
+//                     type: payload.type,
+// });
+//             });
+//     });
+// };
+
+odoo.define('VATSync.notification_listener', function (require) {
     "use strict";
 
+    var bus = require('bus.Longpolling');  // Try requiring bus.Longpolling
     var core = require('web.core');
 
-    core.action_registry.add('open_url_with_auth', function (action) {
-        var url = action.url;
-        var headers = action.headers;
+    // Start bus polling
+    bus.startPolling();
 
-        // Create a hidden form to submit the request with headers
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = url;
-        form.target = '_blank';
+    // Listen for notifications
+    bus.on('notification', null, function (notifications) {
+        _.each(notifications, function (notification) {
+            var channel = notification[0];  // This is your channel name
+            var message = notification[1];  // This is the message payload
 
-        // Add headers as hidden inputs
-        for (var key in headers) {
-            if (headers.hasOwnProperty(key)) {
-                var input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = headers[key];
-                form.appendChild(input);
+            if (channel === 'your_channel_name') {
+                console.log("Notification received: ", message);
             }
-        }
-
-        // Submit the form
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
+        });
     });
 });
