@@ -68,7 +68,7 @@ class DateRangeWizard(models.TransientModel):
 
         if response.status_code == 500:  # Handle server error
             _logger.error("Server not responding (500 Internal Server Error).")
-            return [{
+            return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
@@ -77,11 +77,9 @@ class DateRangeWizard(models.TransientModel):
                     'type': 'danger',
                     'sticky': False,
                 },
-            }, {
-                'type': 'ir.actions.act_window_close',  # This closes the wizard window
-            }]
+            }
         elif response.status_code in [200, 204]:  # Handle both 200 and 204 as success
-            return [{
+            return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
@@ -90,9 +88,7 @@ class DateRangeWizard(models.TransientModel):
                     'type': 'success',
                     'sticky': False,
                 },
-            }, {
-                'type': 'ir.actions.act_window_close',  # This closes the wizard window
-            }]
+            }
         else:
             _logger.error(f"Failed to process data! Status: {response.status_code} - {response.text}")
             raise UserError(f'Failed to process data! Status: {response.status_code}')
