@@ -1,4 +1,7 @@
+import base64
 from odoo import models, fields, api
+from odoo.exceptions import UserError
+import requests
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -25,6 +28,8 @@ class SaleOrder(models.Model):
 
     amount_total_with_taxes = fields.Monetary(string="Total with Taxes", compute="_compute_amount_total_with_taxes",
                                               store=True)
+
+
     @api.depends('order_line')
     def _compute_amount_total_with_taxes(self):
         for order in self:
@@ -33,6 +38,152 @@ class SaleOrder(models.Model):
             for line in order.order_line:
                 total += line.price_subtotal + line.total_tax
             order.amount_total_with_taxes = total
+
+    def action_generate_mushak_pdf(self):
+        """Button for 6.3 to get the Mushak PDF URL and retrieve the PDF."""
+
+        # Dynamically fetch the API base URL from system parameters
+        api_base_url = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_base_url')
+        if not api_base_url:
+            raise UserError("Mushak API base URL is not configured in the settings.")
+
+        # Complete API URL for PDF generation
+        api_url = f"{api_base_url}/api/v1/generate_mushak_pdf"
+
+        # Fetch the user's API key (can be stored in config parameters)
+        user_api_key = self.env['ir.config_parameter'].sudo().get_param('VATSync.api_key')
+        if not user_api_key:
+            raise UserError("Mushak API key is not configured in the settings.")
+
+        # Set the headers with Bearer token and JSON content type
+        headers = {
+            'Authorization': f'Bearer {user_api_key}',
+            'Content-Type': 'application/json'
+        }
+
+        # Prepare the data (assuming sale number is stored in 'name' field)
+        data = {'sale_number': self.name}
+
+        # Create a session to maintain authorization across requests
+        session = requests.Session()
+        session.headers.update(headers)
+
+        try:
+            # First request: Get the PDF URL
+            response = session.get(api_url, json=data)
+            response.raise_for_status()  # Raises an HTTPError for bad responses
+
+            try:
+                response_data = response.json()
+            except ValueError:
+                raise UserError("Failed to decode JSON response from the Mushak API!")
+
+            pdf_url = response_data.get('m_6_3_url')
+            if not pdf_url:
+                raise UserError("No URL returned from the Mushak API!")
+
+            # Ensure the PDF URL is valid
+            if not pdf_url.startswith('http'):
+                raise UserError("Invalid URL received from the Mushak API!")
+
+            # Second request: Get the PDF content
+            pdf_response = session.get(pdf_url)
+            pdf_response.raise_for_status()
+
+            # Check if the content type is PDF
+            if 'application/pdf' not in pdf_response.headers.get('Content-Type', ''):
+                raise UserError("The URL did not return a PDF file.")
+
+            # Generate a unique filename, ensure it's safe
+            filename = f"mushak_6_3_{self.name.replace('/', '_')}.pdf"
+
+            # Save the PDF content to a temporary file as attachment
+            pdf_content = pdf_response.content
+            attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'type': 'binary',
+                'datas': base64.b64encode(pdf_content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf'
+            })
+            self.notify_user(
+                message='Mushak PDF generated successfully!',
+                status='success'
+            )
+
+            # Return an action to download the PDF
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}/{filename}?download=true',
+                'target': 'self',
+            }
+
+        except requests.exceptions.RequestException as e:
+            return self.notify_user(
+                message='Server not responding. Please try again later.',
+                status='danger'
+            )
+
+        finally:
+            session.close()
+
+
+    @api.model
+    def notify_user(self, message, status):
+        """Logic for showing notification directly in UI."""
+        notification_type = 'success' if status == 'success' else 'danger'
+
+        # Return notification action for Odoo UI
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'VAT Bangladesh Status Update',
+                'message': message,
+                'type': notification_type,  # Can be 'success', 'warning', 'danger', etc.
+                'sticky': False,  # Auto-hide the notification after a few seconds
+            }
+        }
+
+    # @api.model
+    # def notify_user(self, message, status):
+    #     # Logic for showing notification directly in UI
+    #     notification_type = 'success' if status else 'danger'
+    #
+    #     # Create and return the notification
+    #     return {
+    #         'type': 'ir.actions.client',
+    #         'tag': 'display_notification',
+    #         'params': {
+    #             'title': 'VAT Bangladesh Status Update',
+    #             'message': message,
+    #             'type': notification_type,
+    #             'sticky': False,  # Auto-hide the notification after a few seconds
+    #         }
+    #     }
+
+    # @api.model
+    # def notify_user(self, message, status):
+    #     # Determine the type of notification
+    #     notification_type = 'success' if status == 'success' else 'danger'
+    #
+    #     # Get the current user (logged-in user in the session)
+    #     user_id = self.env.user.id
+    #
+    #     # Send notification to the current user via bus.bus
+    #     self.env['bus.bus']._sendone(
+    #         (self.env.cr.dbname, 'res.partner', user_id),  # Target user (based on their ID)
+    #         'notification',  # Type of message
+    #         {
+    #             'title': 'VAT Bangladesh Status Update',
+    #             'message': message,
+    #             'type': notification_type,  # 'success' or 'danger'
+    #             'sticky': False  # Notification auto-hides after a few seconds
+    #         }
+    #     )
+    #     return True
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'

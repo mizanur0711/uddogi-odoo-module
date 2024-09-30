@@ -1,0 +1,15 @@
+<odoo>
+    <record id="action_vat_bangladesh_wizard" model="ir.actions.act_window">
+        <field name="name">VAT Bangladesh</field>
+        <field name="res_model">date.range.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_date_range_wizard_form"/>
+    </record>
+
+    <menuitem id="menu_vat_bangladesh"
+              name="VAT Bangladesh"
+              parent="sale.sale_menu_root"
+              sequence="15"
+              action="action_vat_bangladesh_wizard"/>
+</odoo>
