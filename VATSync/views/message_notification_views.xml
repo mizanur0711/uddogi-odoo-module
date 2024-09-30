@@ -1,69 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Define the tree view for Notification Messages -->
+    <!-- Action to open the notification.message model -->
+    <record id="action_notification_message" model="ir.actions.act_window">
+        <field name="name">Notification Messages</field>
+        <field name="res_model">notification.message</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Notifications found.
+            </p>
+        </field>
+    </record>
+
+    <!-- Tree view for the notification.message model -->
     <record id="view_notification_message_tree" model="ir.ui.view">
         <field name="name">notification.message.tree</field>
         <field name="model">notification.message</field>
         <field name="arch" type="xml">
-            <tree string="Notification Messages" default_order="create_date desc">
-                <field name="create_date"/>
+            <tree string="Notification Messages" editable="bottom" default_order="create_date desc">
                 <field name="name"/>
                 <field name="message"/>
                 <field name="notification_type"/>
+                <field name="create_date" string="Date Created"/>
+                <field name="active"/>
             </tree>
         </field>
     </record>
 
-    <!-- Define the form view for Notification Messages -->
+    <!-- Form view for the notification.message model (Read-Only) -->
     <record id="view_notification_message_form" model="ir.ui.view">
         <field name="name">notification.message.form</field>
         <field name="model">notification.message</field>
         <field name="arch" type="xml">
-            <form string="Notification Message">
+            <form string="Notification Message" readonly="1">
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="message"/>
-                        <field name="notification_type"/>
-                        <field name="create_date" readonly="1"/>
+                        <field name="name" readonly="1"/>
+                        <field name="message" readonly="1"/>
+                        <field name="notification_type" readonly="1"/>
+                        <field name="create_date" string="Date Created" readonly="1"/>
+                        <field name="active" readonly="1"/>
                     </group>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Define the search view for Notification Messages -->
-    <record id="view_notification_message_search" model="ir.ui.view">
-        <field name="name">notification.message.search</field>
-        <field name="model">notification.message</field>
-        <field name="arch" type="xml">
-            <search string="Search Notification Messages">
-                <field name="name"/>
-                <field name="message"/>
-                <filter string="Success" name="success" domain="[('notification_type', '=', 'success')]"/>
-                <filter string="Error" name="error" domain="[('notification_type', '=', 'error')]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Type" name="group_by_type" context="{'group_by': 'notification_type'}"/>
-                    <filter string="Date" name="group_by_date" context="{'group_by': 'create_date:day'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
-    <!-- Define the action for Notification Messages -->
-    <record id="action_notification_message" model="ir.actions.act_window">
-        <field name="name">Notification Messages</field>
-        <field name="res_model">notification.message</field>
-        <field name="view_mode">tree,form</field>
-        <field name="view_id" ref="view_notification_message_tree"/>
-        <field name="search_view_id" ref="view_notification_message_search"/>
-        <field name="context">{'search_default_group_by_date': 1}</field>
-        <field name="target">current</field>
-    </record>
-
-
-    <menuitem id="menu_notification_message"
+    <!-- Menu item to access the notifications under Sales module -->
+    <menuitem id="menu_notification_message_sales"
               name="Notification Messages"
               parent="sale.sale_menu_root"
-              sequence="10"
-              action="action_notification_message"/>
+              action="action_notification_message"
+              sequence="100"/>
 </odoo>
