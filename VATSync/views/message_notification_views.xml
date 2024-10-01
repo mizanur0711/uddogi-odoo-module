@@ -55,7 +55,7 @@
 
     <!-- Menu item to access the notifications under Sales module -->
     <menuitem id="menu_notification_message_sales"
-              name="Notification Messages"
+              name="Notification History"
               parent="sale.sale_menu_root"
               action="action_notification_message"
               sequence="16"/>
