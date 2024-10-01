@@ -20,9 +20,12 @@
             <tree string="Notification Messages" editable="bottom" default_order="create_date desc">
                 <field name="name"/>
                 <field name="message"/>
-                <field name="notification_type"/>
+                <field name="notification_type"
+                       decoration-success="notification_type == 'success'"
+                       decoration-danger="notification_type == 'error'"
+                       widget="badge"
+                />
                 <field name="create_date" string="Date Created"/>
-                <field name="active"/>
             </tree>
         </field>
     </record>
@@ -37,9 +40,13 @@
                     <group>
                         <field name="name" readonly="1"/>
                         <field name="message" readonly="1"/>
-                        <field name="notification_type" readonly="1"/>
+                        <!-- Form view with badge widget and default success/danger classes -->
+                        <field name="notification_type"
+                               decoration-success="notification_type == 'success'"
+                               decoration-danger="notification_type == 'error'"
+                               widget="badge"
+                        />
                         <field name="create_date" string="Date Created" readonly="1"/>
-                        <field name="active" readonly="1"/>
                     </group>
                 </sheet>
             </form>
@@ -51,5 +58,5 @@
               name="Notification Messages"
               parent="sale.sale_menu_root"
               action="action_notification_message"
-              sequence="100"/>
+              sequence="16"/>
 </odoo>
