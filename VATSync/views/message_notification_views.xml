@@ -40,7 +40,6 @@
                     <group>
                         <field name="name" readonly="1"/>
                         <field name="message" readonly="1"/>
-                        <!-- Form view with badge widget and default success/danger classes -->
                         <field name="notification_type"
                                decoration-success="notification_type == 'success'"
                                decoration-danger="notification_type == 'error'"
@@ -53,7 +52,6 @@
         </field>
     </record>
 
-    <!-- Menu item to access the notifications under Sales module -->
     <menuitem id="menu_notification_message_sales"
               name="Notification History"
               parent="sale.sale_menu_root"
