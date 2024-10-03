@@ -1,4 +1,4 @@
-odoo.define('your_module_name.tour', function (require) {
+odoo.define('VATSync.tour', function (require) {
     "use strict";
 
     var core = require('web.core');
@@ -14,6 +14,15 @@ odoo.define('your_module_name.tour', function (require) {
             content: 'Open the Sales app to start the VAT Bangladesh tour.',
             position: 'bottom',
         },
-        // The tour steps will be automatically loaded from the XML definition
+        {
+            trigger: 'a[data-menu-xmlid="VATSync.menu_vat_bangladesh"]',
+            content: 'Click here to access the VAT Bangladesh wizard for date range selection.',
+            position: 'bottom'
+        },
+        {
+            trigger: 'button[name="action_generate_mushak_pdf"]',
+            content: 'Click here to generate the VAT 6.3 Report through the VAT Bangladesh Calculation engine.',
+            position: 'bottom'
+        }
     ]);
 });

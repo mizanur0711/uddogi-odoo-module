@@ -1,9 +1,7 @@
 from odoo import http
 from odoo.http import request
 
-
-class MyController(http.Controller):
-
-    @http.route('/uddogi_odoo_module/hello', type='http', auth='none', methods=['GET'], csrf=False)
-    def hello(self):
-        return "hello for now"
+class VATSyncController(http.Controller):
+    @http.route('/vatsync/tour', auth='user', type='json')
+    def start_tour(self):
+        request.env['web_tour.tour']._tour_ensure_started('vat_bangladesh_tour')
